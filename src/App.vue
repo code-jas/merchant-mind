@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
 </script>
 
 <template>
-<div>hello</div>
+   <div>
+      <Button>Click me</Button>
+   </div>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>
