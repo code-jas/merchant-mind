@@ -1,11 +1,13 @@
 ## Roadmap
 
 -  [x] Project Initialization and Setup
--  [ ] Authentication Module
--  [ ] Layout and Navigation
+-  [x] Authentication Module
+-  [x] Layout and Navigation
 -  [ ] Dashboard Module
 -  [ ] Product Management Module
 -  [ ] Category Management Module
+-  [ ] Users Management Module
+-  [ ] Enhancements UI/UX
 
 # Vue 3 + TypeScript + Vite
 
