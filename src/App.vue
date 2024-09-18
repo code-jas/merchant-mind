@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
+import Toaster from '@/components/ui/toast/Toaster.vue';
 </script>
 
 <template>
-   <div>
-      <Button>Click me</Button>
-   </div>
+   <Toaster />
+
+   <router-view></router-view>
 </template>
 
 <style scoped></style>
