@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import DateRangePicker from './layout/DateRangePicker.vue';
 import MainNav from './layout/MainNav.vue';
@@ -11,12 +11,24 @@ import { Button } from '@/components/ui/button';
 const route = useRoute();
 const pageTitle = ref('Dashboard');
 
-onMounted(() => {
-   // Update pageTitle based on the current route if needed
-   console.log('route.meta.title :>> ', route.meta.title);
-   pageTitle.value =
-      typeof route.meta.title === 'string' ? route.meta.title : 'Dashboard';
+const currentRouteName = computed(() => {
+   return route.name ? route.name.toString() : '';
 });
+
+watch(
+   () => route.meta.title,
+   (newTitle) => {
+      pageTitle.value = typeof newTitle === 'string' ? newTitle : 'Dashboard';
+   },
+   { immediate: true }
+);
+
+// onMounted(() => {
+//    // Update pageTitle based on the current route if needed
+//    console.log('route.meta.title :>> ', route.meta.title);
+//    pageTitle.value =
+//       typeof route.meta.title === 'string' ? route.meta.title : 'Dashboard';
+// });
 </script>
 
 <template>
@@ -24,7 +36,7 @@ onMounted(() => {
       <div class="border-b">
          <!-- Available to all -->
          <div class="flex h-16 items-center px-4">
-            <MainNav class="mx-6" />
+            <MainNav :currentRoute="currentRouteName" class="mx-6" />
             <div class="ml-auto flex items-center space-x-4">
                <Search />
                <UserNav />
