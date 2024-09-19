@@ -25,7 +25,8 @@
       "vee-validate": "^4.13.2",
       "vue": "^3.4.37",
       "vue-router": "^4.4.5",
-      "zod": "^3.23.8"
+      "zod": "^3.23.8",
+      "@tanstack/vue-table": "^8.19.3"
    },
    "devDependencies": {
       "@iconify/vue": "^4.1.2",
