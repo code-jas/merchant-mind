@@ -11,21 +11,13 @@ export const getProductById = async (id: number): Promise<Product> => {
    return response.data;
 };
 
-export const createProduct = async (
-   productData: Partial<Product>
-): Promise<Product> => {
+export const createProduct = async (productData: Partial<Product>): Promise<Product> => {
    const response = await apiClient.post<Product>('/products', productData);
    return response.data;
 };
 
-export const updateProduct = async (
-   id: number,
-   productData: Partial<Product>
-): Promise<Product> => {
-   const response = await apiClient.put<Product>(
-      `/products/${id}`,
-      productData
-   );
+export const updateProduct = async (id: number, productData: Partial<Product>): Promise<Product> => {
+   const response = await apiClient.put<Product>(`/products/${id}`, productData);
    return response.data;
 };
 

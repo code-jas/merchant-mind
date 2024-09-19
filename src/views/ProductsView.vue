@@ -19,9 +19,7 @@ onMounted(() => {
 
    <h3 class="text-2xl font-semibold mb-4">Products</h3>
 
-   <div v-if="productStore.isLoading" class="text-center">
-      Loading products...
-   </div>
+   <div v-if="productStore.isLoading" class="text-center">Loading products...</div>
 
    <div v-else-if="productStore.error" class="text-red-500">
       {{ productStore.error }}

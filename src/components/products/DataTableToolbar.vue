@@ -16,9 +16,7 @@ interface DataTableToolbarProps {
 
 const props = defineProps<DataTableToolbarProps>();
 
-const isFiltered = computed(
-   () => props.table.getState().columnFilters.length > 0
-);
+const isFiltered = computed(() => props.table.getState().columnFilters.length > 0);
 </script>
 
 <template>
@@ -26,13 +24,9 @@ const isFiltered = computed(
       <div class="flex flex-1 items-center space-x-2">
          <Input
             placeholder="Filter tasks..."
-            :model-value="
-               (table.getColumn('title')?.getFilterValue() as string) ?? ''
-            "
+            :model-value="(table.getColumn('title')?.getFilterValue() as string) ?? ''"
             class="h-8 w-[150px] lg:w-[250px]"
-            @input="
-               table.getColumn('title')?.setFilterValue($event.target.value)
-            "
+            @input="table.getColumn('title')?.setFilterValue($event.target.value)"
          />
          <DataTableFacetedFilter
             v-if="table.getColumn('status')"
@@ -47,12 +41,7 @@ const isFiltered = computed(
             :options="priorities"
          />
 
-         <Button
-            v-if="isFiltered"
-            variant="ghost"
-            class="h-8 px-2 lg:px-3"
-            @click="table.resetColumnFilters()"
-         >
+         <Button v-if="isFiltered" variant="ghost" class="h-8 px-2 lg:px-3" @click="table.resetColumnFilters()">
             Reset
             <Icon icon="radix-icons:cross-2" class="h-4 w-4" />
          </Button>

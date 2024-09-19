@@ -18,10 +18,7 @@ export const createUser = async (userData: Partial<User>): Promise<User> => {
    return response.data;
 };
 
-export const updateUser = async (
-   id: number,
-   userData: Partial<User>
-): Promise<User> => {
+export const updateUser = async (id: number, userData: Partial<User>): Promise<User> => {
    const response = await apiClient.put<User>(`/users/${id}`, userData);
    return response.data;
 };

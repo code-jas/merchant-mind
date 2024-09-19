@@ -1,33 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { loginSchema, LoginSchema } from '@/validation/loginSchema';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-   Card,
-   CardContent,
-   CardDescription,
-   CardFooter,
-   CardHeader,
-   CardTitle,
-} from '@/components/ui/card';
-import {
-   Form,
-   FormField,
-   FormItem,
-   FormLabel,
-   FormControl,
-   FormMessage,
-} from '@/components/ui/form';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/components/ui/toast';
 
 const authStore = useAuthStore();
-const { toast } = useToast();
 const router = useRouter();
 
 const { handleSubmit, values, errors } = useForm<LoginSchema>({
@@ -56,19 +39,13 @@ const onSubmit = handleSubmit(async (formValues) => {
 </script>
 
 <template>
-   <div
-      class="flex items-center justify-center flex-col min-h-screen bg-gray-100"
-   >
+   <div class="flex items-center justify-center flex-col min-h-screen bg-gray-100">
       <!-- <Toaster /> -->
 
       <Card class="w-96">
          <CardHeader class="space-y-1">
-            <CardTitle class="text-2xl font-bold text-center">
-               Welcome back
-            </CardTitle>
-            <CardDescription class="text-center text-sm">
-               Access your admin dashboard
-            </CardDescription>
+            <CardTitle class="text-2xl font-bold text-center"> Welcome back </CardTitle>
+            <CardDescription class="text-center text-sm"> Access your admin dashboard </CardDescription>
          </CardHeader>
          <form @submit.prevent="onSubmit" class="space-y-4">
             <!-- <form @submit.prevent="handleLogin" class="space-y-4"> -->
@@ -77,11 +54,7 @@ const onSubmit = handleSubmit(async (formValues) => {
                   <FormItem>
                      <FormLabel>Email</FormLabel>
                      <FormControl>
-                        <Input
-                           type="email"
-                           v-bind="field"
-                           placeholder="Enter your email"
-                        />
+                        <Input type="email" v-bind="field" placeholder="Enter your email" />
                      </FormControl>
                      <FormMessage>{{ errors.email }}</FormMessage>
                   </FormItem>
@@ -90,11 +63,7 @@ const onSubmit = handleSubmit(async (formValues) => {
                   <FormItem>
                      <FormLabel>Password</FormLabel>
                      <FormControl>
-                        <Input
-                           type="password"
-                           v-bind="field"
-                           placeholder="Enter your password"
-                        />
+                        <Input type="password" v-bind="field" placeholder="Enter your password" />
                      </FormControl>
                      <FormMessage>{{ errors.password }}</FormMessage>
                   </FormItem>

@@ -32,10 +32,7 @@ const task = computed(() => taskSchema.parse(props.row.original));
 <template>
    <DropdownMenu>
       <DropdownMenuTrigger as-child>
-         <Button
-            variant="ghost"
-            class="flex h-8 w-8 p-0 data-[state=open]:bg-muted"
-         >
+         <Button variant="ghost" class="flex h-8 w-8 p-0 data-[state=open]:bg-muted">
             <Icon icon="radix-icons:dots-horizontal" class="h-4 w-4" />
             <span class="sr-only">Open menu</span>
          </Button>
@@ -49,11 +46,7 @@ const task = computed(() => taskSchema.parse(props.row.original));
             <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
                <DropdownMenuRadioGroup :value="task.label">
-                  <DropdownMenuRadioItem
-                     v-for="label in labels"
-                     :key="label.value"
-                     :value="label.value"
-                  >
+                  <DropdownMenuRadioItem v-for="label in labels" :key="label.value" :value="label.value">
                      {{ label.label }}
                   </DropdownMenuRadioItem>
                </DropdownMenuRadioGroup>

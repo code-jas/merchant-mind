@@ -13,15 +13,8 @@ defineProps<MainNavProps>();
 </script>
 
 <template>
-   <nav
-      :class="
-         cn('flex items-center space-x-4 lg:space-x-6', $attrs.class ?? '')
-      "
-   >
-      <RouterLink
-         to="/dashboard"
-         class="text-sm font-bold transition-colors hover:text-primary flex items-center mr-4"
-      >
+   <nav :class="cn('flex items-center space-x-4 lg:space-x-6', $attrs.class ?? '')">
+      <RouterLink to="/dashboard" class="text-sm font-bold transition-colors hover:text-primary flex items-center mr-4">
          <Avatar class="h-6 w-6 mr-2">
             <AvatarImage :src="Logo" alt="Merchant Mind Logo" />
             <AvatarFallback>MM</AvatarFallback>

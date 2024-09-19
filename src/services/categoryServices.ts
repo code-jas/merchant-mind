@@ -13,21 +13,13 @@ export const getCategoryById = async (id: number): Promise<Category> => {
    return response.data;
 };
 
-export const createCategory = async (
-   categoryData: Partial<Category>
-): Promise<Category> => {
+export const createCategory = async (categoryData: Partial<Category>): Promise<Category> => {
    const response = await apiClient.post<Category>('/categories', categoryData);
    return response.data;
 };
 
-export const updateCategory = async (
-   id: number,
-   categoryData: Partial<Category>
-): Promise<Category> => {
-   const response = await apiClient.put<Category>(
-      `/categories/${id}`,
-      categoryData
-   );
+export const updateCategory = async (id: number, categoryData: Partial<Category>): Promise<Category> => {
+   const response = await apiClient.put<Category>(`/categories/${id}`, categoryData);
    return response.data;
 };
 
