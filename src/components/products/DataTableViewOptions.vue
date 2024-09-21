@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { Table } from '@tanstack/vue-table';
 import { computed } from 'vue';
-import type { Task } from '@/data/schema';
 import { Icon } from '@iconify/vue';
 
 import { Button } from '@/components/ui/button';
@@ -14,11 +13,11 @@ import {
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface DataTableViewOptionsProps {
-   table: Table<Task>;
+interface DataTableViewOptionsProps<T> {
+   table: Table<T>;
 }
 
-const props = defineProps<DataTableViewOptionsProps>();
+const props = defineProps<DataTableViewOptionsProps<any>>();
 
 const columns = computed(() =>
    props.table.getAllColumns().filter((column) => typeof column.accessorFn !== 'undefined' && column.getCanHide())
@@ -36,7 +35,6 @@ const columns = computed(() =>
       <DropdownMenuContent align="end" class="w-[150px]">
          <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
          <DropdownMenuSeparator />
-
          <DropdownMenuCheckboxItem
             v-for="column in columns"
             :key="column.id"

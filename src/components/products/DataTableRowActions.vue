@@ -3,7 +3,7 @@ import type { Row } from '@tanstack/vue-table';
 import { computed } from 'vue';
 import { labels } from '@/data/data';
 import { taskSchema } from '@/data/schema';
-import type { Task } from '@/data/schema';
+import type { Product } from '@/data/schema';
 import { Icon } from '@iconify/vue';
 
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface DataTableRowActionsProps {
-   row: Row<Task>;
+   row: Row<Product>;
 }
 const props = defineProps<DataTableRowActionsProps>();
 

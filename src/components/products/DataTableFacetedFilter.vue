@@ -2,7 +2,7 @@
 import type { Column } from '@tanstack/vue-table';
 import type { Component } from 'vue';
 import { computed } from 'vue';
-import type { Task } from '@/data/schema';
+import type { Product } from '@/data/schema';
 import { Icon } from '@iconify/vue';
 
 import { Badge } from '@/components/ui/badge';
@@ -22,7 +22,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 interface DataTableFacetedFilter {
-   column?: Column<Task, any>;
+   column?: Column<Product, any>;
    title?: string;
    options: {
       label: string;

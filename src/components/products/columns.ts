@@ -1,14 +1,15 @@
-import type { ColumnDef } from '@tanstack/vue-table';
+import type { ColumnDef } from '@tanstack/table-core';
 import { h } from 'vue';
 
-import { labels, priorities, statuses } from '@/data/data';
-import type { Task } from '@/data/schema';
 import DataTableColumnHeader from './DataTableColumnHeader.vue';
 import DataTableRowActions from './DataTableRowActions.vue';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
+import { Icon } from '@iconify/vue';
+import { cn } from '@/lib/utils';
+import { Category, Product } from '@/data/schema';
+import placeholderImage from '@/assets/no-image-placeholder.jpg';
 
-export const columns: ColumnDef<Task>[] = [
+export const columns: ColumnDef<Product>[] = [
    {
       id: 'select',
       header: ({ table }) =>
@@ -30,60 +31,100 @@ export const columns: ColumnDef<Task>[] = [
    },
    {
       accessorKey: 'id',
-      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Task' }),
-      cell: ({ row }) => h('div', { class: 'w-20' }, row.getValue('id')),
-      enableSorting: false,
-      enableHiding: false,
+      size: 20,
+      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'ID' }),
+      cell: ({ row }) => h('div', { class: '' }, row.getValue('id')),
+      enableSorting: true,
+      enableHiding: true,
+   },
+   {
+      accessorKey: 'images',
+      size: 100, // Adjusted to accommodate the image width plus padding/margin
+      header: 'Image', // Singular since we're displaying only one image
+      cell: ({ row }) => {
+         const images = row.getValue('images') as string[];
+         const firstImage = images[0];
+
+         if (!firstImage) {
+            return h('div', { class: 'w-1/5 flex justify-center items-center' }, [
+               h('img', {
+                  src: placeholderImage,
+                  alt: `No image available for ${row.getValue('title')}`,
+                  class: cn('object-cover transition-transform duration-200 ease-in-out hover:scale-105', 'rounded-md'),
+                  style: {
+                     width: '45px',
+                     height: '60px',
+                  },
+               }),
+            ]);
+         }
+         return h(
+            'div',
+            { class: 'flex justify-center items-center' }, // Center the image within the cell
+            [
+               h('img', {
+                  src: firstImage,
+                  alt: `Image for ${row.getValue('title')}`,
+                  loading: 'lazy', // Optimizes image loading
+                  class: cn(
+                     'object-cover transition-transform duration-200 ease-in-out hover:scale-105',
+                     'rounded-md' // Adds rounded corners
+                  ),
+                  style: {
+                     width: '45px',
+                     height: '60px',
+                  },
+                  onError: (event: Event) => {
+                     const target = event.target as HTMLImageElement;
+                     target.src = placeholderImage; // Fallback to placeholder on error
+                  },
+               }),
+            ]
+         );
+      },
+      enableSorting: false, // Image columns typically aren't sortable
+      enableHiding: true,
    },
    {
       accessorKey: 'title',
       header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Title' }),
 
       cell: ({ row }) => {
-         const label = labels.find((label) => label.value === row.original.label);
+         return h('div', { class: 'flex space-x-2' }, [
+            h('span', { class: 'max-w-[500px] w-[500px] truncate font-medium' }, row.getValue('title')),
+         ]);
+      },
+   },
+   {
+      accessorKey: 'price',
+      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Price' }),
+
+      cell: ({ row }) => {
+         return h('div', { class: 'flex w-[100px] items-center' }, [
+            h(h(Icon, { icon: 'lucide:dollar-sign' }), {
+               class: 'mr-2 h-4 w-4 text-muted-foreground',
+            }),
+            h('span', row.getValue('price')),
+         ]);
+      },
+      filterFn: (row, id, value) => {
+         return value.includes(row.getValue(id));
+      },
+   },
+   {
+      accessorKey: 'category',
+      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Category' }),
+      cell: ({ row }) => {
+         const category = row.getValue('category') as Category | undefined;
+         const categoryName = category?.name ?? 'No Category';
 
          return h('div', { class: 'flex space-x-2' }, [
-            label ? h(Badge, { variant: 'outline' }, () => label.label) : null,
-            h('span', { class: 'max-w-[500px] truncate font-medium' }, row.getValue('title')),
-         ]);
-      },
-   },
-   {
-      accessorKey: 'status',
-      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Status' }),
-
-      cell: ({ row }) => {
-         const status = statuses.find((status) => status.value === row.getValue('status'));
-
-         if (!status) return null;
-
-         return h('div', { class: 'flex w-[100px] items-center' }, [
-            status.icon && h(status.icon, { class: 'mr-2 h-4 w-4 text-muted-foreground' }),
-            h('span', status.label),
+            h('span', { class: 'max-w-[300px] truncate font-medium' }, categoryName),
          ]);
       },
       filterFn: (row, id, value) => {
-         return value.includes(row.getValue(id));
-      },
-   },
-   {
-      accessorKey: 'priority',
-      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Priority' }),
-      cell: ({ row }) => {
-         const priority = priorities.find((priority) => priority.value === row.getValue('priority'));
-
-         if (!priority) return null;
-
-         return h('div', { class: 'flex items-center' }, [
-            priority.icon &&
-               h(priority.icon, {
-                  class: 'mr-2 h-4 w-4 text-muted-foreground',
-               }),
-            h('span', {}, priority.label),
-         ]);
-      },
-      filterFn: (row, id, value) => {
-         return value.includes(row.getValue(id));
+         const categoryName = (row.getValue(id) as Category)?.name ?? '';
+         return value.includes(categoryName);
       },
    },
    {

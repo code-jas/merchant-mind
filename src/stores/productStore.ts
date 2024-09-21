@@ -1,25 +1,95 @@
 import { defineStore } from 'pinia';
-import { getProducts, getProductById, createProduct, updateProduct, deleteProduct } from '@/services/productService';
+import {
+   getProducts,
+   getProductById,
+   createProduct,
+   updateProduct,
+   deleteProduct,
+   ProductRequests,
+   getTotalProducts,
+} from '@/services/productService';
 import { Product } from '@/types';
+
+interface Filters {
+   [key: string]: any;
+}
 
 export const useProductStore = defineStore('product', {
    state: () => ({
       products: [] as Product[],
       isLoading: false,
       error: null as string | null,
+      offset: 0,
+      limit: 10,
+      totalItems: 0,
+      filters: {} as Filters,
    }),
+
+   getters: {
+      currentPage(state): number {
+         return Math.floor(state.offset / state.limit) + 1;
+      },
+      totalPages(state): number {
+         return Math.ceil(state.totalItems / state.limit);
+      },
+   },
 
    actions: {
       async fetchProducts() {
          this.isLoading = true;
          this.error = null;
          try {
-            this.products = await getProducts();
+            const params = {
+               offset: this.offset,
+               limit: this.limit,
+               ...this.filters,
+            };
+            const dataResponse: ProductRequests = await getProducts(params);
+
+            this.products = dataResponse.data;
          } catch (err: any) {
             this.error = err.message || 'Failed to fetch products';
          } finally {
             this.isLoading = false;
          }
+      },
+
+      async fetchTotalItems() {
+         try {
+            // The API lacks total count info in headers or dedicated endpoints,
+            // so I'm aggregating paginated data to determine the total number of products.
+            const total = await getTotalProducts();
+            this.totalItems = total;
+         } catch (err: any) {
+            this.error = err.message || 'Failed to fetch total items';
+         }
+      },
+
+      async initialize() {
+         await Promise.all([this.fetchProducts(), this.fetchTotalItems()]);
+      },
+
+      setOffset(newOffset: number) {
+         this.offset = newOffset;
+         this.fetchProducts();
+      },
+
+      setLimit(newLimit: number) {
+         this.limit = newLimit;
+         this.offset = 0;
+         this.fetchProducts();
+      },
+
+      setFilters(newFilters: Filters) {
+         this.filters = { ...this.filters, ...newFilters };
+         this.offset = 0; // Reset to start when filters change
+         this.fetchProducts();
+      },
+
+      clearFilters() {
+         this.filters = {};
+         this.offset = 0;
+         this.fetchProducts();
       },
 
       async fetchProduct(id: number) {

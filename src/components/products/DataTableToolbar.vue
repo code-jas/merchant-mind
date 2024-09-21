@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import type { Table } from '@tanstack/vue-table';
 import { computed } from 'vue';
-import type { Task } from '@/data/schema';
 import { Icon } from '@iconify/vue';
 
-import { priorities, statuses } from '@/data/data';
-import DataTableFacetedFilter from './DataTableFacetedFilter.vue';
+// import DataTableFacetedFilter from './DataTableFacetedFilter.vue';
 import DataTableViewOptions from './DataTableViewOptions.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
-interface DataTableToolbarProps {
-   table: Table<Task>;
+interface DataTableToolbarProps<T> {
+   table: Table<T>;
 }
 
-const props = defineProps<DataTableToolbarProps>();
+// Use the generic type in defineProps
+// 'any' can be replaced by specific types in the parent component
+const props = defineProps<DataTableToolbarProps<any>>();
 
 const isFiltered = computed(() => props.table.getState().columnFilters.length > 0);
 </script>
@@ -28,10 +28,11 @@ const isFiltered = computed(() => props.table.getState().columnFilters.length > 
             class="h-8 w-[150px] lg:w-[250px]"
             @input="table.getColumn('title')?.setFilterValue($event.target.value)"
          />
-         <DataTableFacetedFilter
-            v-if="table.getColumn('status')"
-            :column="table.getColumn('status')"
-            title="Status"
+         <!-- Faceted filters for other columns -->
+         <!-- <DataTableFacetedFilter
+            v-if="table.getColumn('price')"
+            :column="table.getColumn('price')"
+            title="Prices"
             :options="statuses"
          />
          <DataTableFacetedFilter
@@ -39,13 +40,15 @@ const isFiltered = computed(() => props.table.getState().columnFilters.length > 
             :column="table.getColumn('priority')"
             title="Priority"
             :options="priorities"
-         />
+         /> -->
 
+         <!-- Reset filters button -->
          <Button v-if="isFiltered" variant="ghost" class="h-8 px-2 lg:px-3" @click="table.resetColumnFilters()">
             Reset
             <Icon icon="radix-icons:cross-2" class="h-4 w-4" />
          </Button>
       </div>
+      <!-- Table view options -->
       <DataTableViewOptions :table="table" />
    </div>
 </template>

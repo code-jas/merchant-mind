@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { Column } from '@tanstack/vue-table';
-import type { Task } from '@/data/schema';
+import type { Product } from '@/data/schema';
 import { Icon } from '@iconify/vue';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface DataTableColumnHeaderProps {
-   column: Column<Task, any>;
+   column: Column<Product, any>;
    title: string;
 }
 
