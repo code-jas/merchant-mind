@@ -18,12 +18,28 @@ import { valueUpdater } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Product } from '@/data/schema';
 import { useProductStore } from '@/stores/productStore';
+import { Filters } from '@/types';
+
+import DataTableRowActions from './DataTableRowActions.vue';
 
 interface DataTableProps {
    columns: ColumnDef<Product, any>[];
    data: Product[];
+   filters: Filters;
+   loading: boolean;
 }
+
 const props = defineProps<DataTableProps>();
+const emit = defineEmits([
+   'create',
+   'view',
+   'edit',
+   'copy',
+   'delete',
+   'page-change',
+   'page-size-change',
+   'filter-change',
+]);
 
 const productStore = useProductStore();
 
@@ -61,7 +77,7 @@ const table = useVueTable({
    },
    enableRowSelection: true,
    manualPagination: true, // Server-side pagination
-   manualSorting: true, // If you have sorting
+   manualSorting: false,
    onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
    onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
@@ -77,13 +93,21 @@ const table = useVueTable({
 
 <template>
    <div class="space-y-4">
-      <!-- Toolbar Slot -->
+      <!-- Toolbar Slot - available for custom pagination -->
       <slot name="toolbar" :table="table">
-         <DataTableToolbar :table="table" />
+         <DataTableToolbar
+            :table="table"
+            :filters="filters"
+            @create="emit('create')"
+            @update:filters="emit('filter-change', $event)"
+         />
       </slot>
 
       <!-- Table Structure -->
-      <div class="rounded-md border">
+
+      <div v-if="loading" class="text-center">Loading products...</div>
+
+      <div v-else class="rounded-md border">
          <Table>
             <TableHeader>
                <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
@@ -104,7 +128,27 @@ const table = useVueTable({
                      :data-state="row.getIsSelected() && 'selected'"
                   >
                      <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
-                        <FlexRender :render="cell.column.columnDef.cell" :props="cell.getContext()" />
+                        <div v-if="cell.column.id == 'actions'">
+                           <!-- <pre>{{ cell.row.original }}</pre> -->
+                           <DataTableRowActions
+                              :product="cell.row.original"
+                              @view="emit('view', $event)"
+                              @edit="emit('edit', $event)"
+                              @copy="emit('copy', $event)"
+                              @delete="emit('delete', $event)"
+                           >
+                           </DataTableRowActions>
+                        </div>
+
+                        <FlexRender
+                           v-else
+                           :render="cell.column.columnDef.cell"
+                           :props="cell.getContext()"
+                           @view="emit('view', $event)"
+                           @edit="emit('edit', $event)"
+                           @copy="emit('copy', $event)"
+                           @delete="emit('delete', $event)"
+                        />
                      </TableCell>
                   </TableRow>
                </template>
@@ -116,22 +160,23 @@ const table = useVueTable({
          </Table>
       </div>
 
-      <!-- Pagination Slot -->
+      <!-- Pagination Slot -  available for custom pagination -->
       <slot
          name="pagination"
          :offset="offset"
          :limit="limit"
          :total="totalItems"
-         @page-change="$emit('page-change', $event)"
-         @page-size-change="$emit('page-size-change', $event)"
+         @page-change="emit('page-change', $event)"
+         @page-size-change="emit('page-size-change', $event)"
       >
+         <!-- Default pagination -->
          <DataTablePagination
             :table="table"
             :offset="offset"
             :limit="limit"
             :total="totalItems"
-            @page-change="$emit('page-change', $event)"
-            @page-size-change="$emit('page-size-change', $event)"
+            @page-change="emit('page-change', $event)"
+            @page-size-change="emit('page-size-change', $event)"
          />
       </slot>
    </div>

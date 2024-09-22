@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/table-core';
 import { h } from 'vue';
 
 import DataTableColumnHeader from './DataTableColumnHeader.vue';
-import DataTableRowActions from './DataTableRowActions.vue';
+// import DataTableRowActions from './DataTableRowActions.vue';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Icon } from '@iconify/vue';
 import { cn } from '@/lib/utils';
@@ -87,7 +87,7 @@ export const columns: ColumnDef<Product>[] = [
    },
    {
       accessorKey: 'title',
-      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Title' }),
+      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Name' }),
 
       cell: ({ row }) => {
          return h('div', { class: 'flex space-x-2' }, [
@@ -129,6 +129,6 @@ export const columns: ColumnDef<Product>[] = [
    },
    {
       id: 'actions',
-      cell: ({ row }) => h(DataTableRowActions, { row }),
+      // cell: ({ row }) => h(DataTableRowActions, { row }),
    },
 ];

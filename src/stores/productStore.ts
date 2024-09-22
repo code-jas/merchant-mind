@@ -8,7 +8,9 @@ import {
    ProductRequests,
    getTotalProducts,
 } from '@/services/productService';
-import { Product } from '@/types';
+
+import { getCategories } from '@/services/categoryServices';
+import { Category, PriceRangeFilter, Product } from '@/types';
 
 interface Filters {
    [key: string]: any;
@@ -17,12 +19,19 @@ interface Filters {
 export const useProductStore = defineStore('product', {
    state: () => ({
       products: [] as Product[],
+      categories: [] as Category[],
       isLoading: false,
       error: null as string | null,
       offset: 0,
       limit: 10,
       totalItems: 0,
-      filters: {} as Filters,
+      filters: {
+         title: '',
+         priceRange: {
+            min: undefined,
+            max: undefined,
+         } as PriceRangeFilter,
+      } as Filters,
    }),
 
    getters: {
@@ -69,6 +78,19 @@ export const useProductStore = defineStore('product', {
          await Promise.all([this.fetchProducts(), this.fetchTotalItems()]);
       },
 
+      async fetchCategories() {
+         this.isLoading = true;
+         this.error = null;
+         try {
+            const response = await getCategories();
+            this.categories = response;
+         } catch (err: any) {
+            this.error = err.message || 'Failed to fetch categories';
+         } finally {
+            this.isLoading = false;
+         }
+      },
+
       setOffset(newOffset: number) {
          this.offset = newOffset;
          this.fetchProducts();
@@ -81,6 +103,7 @@ export const useProductStore = defineStore('product', {
       },
 
       setFilters(newFilters: Filters) {
+         console.log('prooduct store newFilters :>> ', newFilters);
          this.filters = { ...this.filters, ...newFilters };
          this.offset = 0; // Reset to start when filters change
          this.fetchProducts();
@@ -110,14 +133,18 @@ export const useProductStore = defineStore('product', {
          }
       },
 
-      async addProduct(productData: Partial<Product>) {
+      async createProduct(productData: Partial<Product>) {
          this.isLoading = true;
          this.error = null;
          try {
-            const newProduct = await createProduct(productData);
-            this.products.push(newProduct);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { category, ...payload } = productData;
+            const newProduct = await createProduct(payload);
+            this.products.unshift(newProduct); // Add to the beginning
+            this.totalItems += 1;
          } catch (err: any) {
-            this.error = err.message || 'Failed to add product';
+            this.error = err.message || 'Failed to create product';
+            throw err; // Re-throw to handle in the component
          } finally {
             this.isLoading = false;
          }
@@ -128,6 +155,7 @@ export const useProductStore = defineStore('product', {
          this.error = null;
          try {
             const updatedProduct = await updateProduct(id, productData);
+            console.log('updateProduct :>> ', updateProduct);
             const index = this.products.findIndex((p) => p.id === id);
             if (index !== -1) {
                this.products[index] = updatedProduct;
@@ -145,6 +173,7 @@ export const useProductStore = defineStore('product', {
          try {
             await deleteProduct(id);
             this.products = this.products.filter((p) => p.id !== id);
+            this.totalItems -= 1;
          } catch (err: any) {
             this.error = err.message || 'Failed to delete product';
          } finally {
