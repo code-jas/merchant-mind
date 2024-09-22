@@ -2,53 +2,101 @@
 import type { Table } from '@tanstack/vue-table';
 import { computed } from 'vue';
 import { Icon } from '@iconify/vue';
+import { debounce } from 'lodash';
 
-// import DataTableFacetedFilter from './DataTableFacetedFilter.vue';
 import DataTableViewOptions from './DataTableViewOptions.vue';
+import DataTablePriceRangeFilter from './DataTablePriceRangeFilter.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Filters, PriceRangeFilter } from '@/types';
 
+// Define props for the table and filters
 interface DataTableToolbarProps<T> {
    table: Table<T>;
+   filters: Filters;
 }
 
-// Use the generic type in defineProps
-// 'any' can be replaced by specific types in the parent component
 const props = defineProps<DataTableToolbarProps<any>>();
 
-const isFiltered = computed(() => props.table.getState().columnFilters.length > 0);
+// Destructure filters from props
+const { filters } = props;
+
+// Check if any filters are applied
+const isFiltered = computed(() => filters.title || filters.priceRange);
+
+// Emit events to update filters
+const emit = defineEmits(['update:filters', 'create']);
+
+const debouncedUpdateTitle = debounce((title: string) => {
+   emit('update:filters', { ...filters, title });
+}, 300); // 300ms debounce delay
+
+// Update the title filter
+const updatetitle = (title: string) => {
+   debouncedUpdateTitle(title);
+};
+
+// Update the price range filter
+const updatePriceRange = (newRange: PriceRangeFilter) => {
+   emit('update:filters', { ...filters, priceRange: newRange });
+};
+
+// Clear the price range filter
+const clearPriceRange = () => {
+   emit('update:filters', { ...filters, priceRange: { min: undefined, max: undefined } });
+};
 </script>
 
 <template>
    <div class="flex items-center justify-between">
       <div class="flex flex-1 items-center space-x-2">
+         <!-- title filter -->
          <Input
-            placeholder="Filter tasks..."
-            :model-value="(table.getColumn('title')?.getFilterValue() as string) ?? ''"
+            placeholder="Product Name..."
+            :model-value="filters.title ?? ''"
             class="h-8 w-[150px] lg:w-[250px]"
-            @input="table.getColumn('title')?.setFilterValue($event.target.value)"
+            @input="updatetitle($event.target.value)"
          />
+
+         <!-- Price range filter -->
+         <DataTablePriceRangeFilter
+            :priceRange="filters.priceRange ?? { min: undefined, max: undefined }"
+            @update:priceRange="updatePriceRange"
+            @clearFilter="clearPriceRange"
+         />
+
          <!-- Faceted filters for other columns -->
          <!-- <DataTableFacetedFilter
-            v-if="table.getColumn('price')"
-            :column="table.getColumn('price')"
-            title="Prices"
-            :options="statuses"
-         />
-         <DataTableFacetedFilter
-            v-if="table.getColumn('priority')"
-            :column="table.getColumn('priority')"
-            title="Priority"
-            :options="priorities"
-         /> -->
+   v-if="table.getColumn('price')"
+   :column="table.getColumn('price')"
+   title="Prices"
+   :options="statuses"
+/>
+<DataTableFacetedFilter
+   v-if="table.getColumn('priority')"
+   :column="table.getColumn('priority')"
+   title="Priority"
+   :options="priorities"
+/> -->
 
          <!-- Reset filters button -->
-         <Button v-if="isFiltered" variant="ghost" class="h-8 px-2 lg:px-3" @click="table.resetColumnFilters()">
+         <Button
+            v-if="isFiltered"
+            variant="ghost"
+            class="h-8 px-2 lg:px-3"
+            @click="$emit('update:filters', { title: '', priceRange: { min: undefined, max: undefined } })"
+         >
             Reset
             <Icon icon="radix-icons:cross-2" class="h-4 w-4" />
          </Button>
       </div>
+
       <!-- Table view options -->
-      <DataTableViewOptions :table="table" />
+      <div class="flex gap-4 items-center">
+         <DataTableViewOptions :table="table" />
+         <div class="flex justify-end">
+            <Button @click="emit('create')" class="h-8"> Create Product </Button>
+         </div>
+      </div>
    </div>
 </template>

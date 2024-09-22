@@ -8,6 +8,7 @@ export interface Category {
 
 export interface Product {
    id: number;
+   categoryId?: number;
    title: string;
    price: number;
    description: string;
@@ -36,4 +37,14 @@ export interface LoginCredentials {
 export interface LoginResponse {
    access_token: string;
    refresh_token?: string;
+}
+
+export interface PriceRangeFilter {
+   min: number | undefined;
+   max: number | undefined;
+}
+
+export interface Filters {
+   title?: string;
+   priceRange?: PriceRangeFilter | undefined;
 }

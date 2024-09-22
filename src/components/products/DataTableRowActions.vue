@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import type { Row } from '@tanstack/vue-table';
-import { computed } from 'vue';
-import { labels } from '@/data/data';
-import { taskSchema } from '@/data/schema';
 import type { Product } from '@/data/schema';
 import { Icon } from '@iconify/vue';
 
@@ -11,22 +7,34 @@ import {
    DropdownMenu,
    DropdownMenuContent,
    DropdownMenuItem,
-   DropdownMenuRadioGroup,
-   DropdownMenuRadioItem,
    DropdownMenuSeparator,
    DropdownMenuShortcut,
-   DropdownMenuSub,
-   DropdownMenuSubContent,
-   DropdownMenuSubTrigger,
    DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
 interface DataTableRowActionsProps {
-   row: Row<Product>;
+   product: Product;
 }
 const props = defineProps<DataTableRowActionsProps>();
 
-const task = computed(() => taskSchema.parse(props.row.original));
+const emit = defineEmits(['view', 'edit', 'copy', 'delete']);
+
+const onView = () => {
+   emit('view', props.product);
+};
+
+const onEdit = () => {
+   console.log('test edit');
+   emit('edit', props.product);
+};
+
+const onCopy = () => {
+   emit('copy', props.product);
+};
+
+const onDelete = () => {
+   emit('delete', props.product.id);
+};
 </script>
 
 <template>
@@ -38,22 +46,12 @@ const task = computed(() => taskSchema.parse(props.row.original));
          </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" class="w-[160px]">
-         <DropdownMenuItem>Edit</DropdownMenuItem>
-         <DropdownMenuItem>Make a copy</DropdownMenuItem>
-         <DropdownMenuItem>Favorite</DropdownMenuItem>
+         <DropdownMenuItem @click="onView">View</DropdownMenuItem>
+         <DropdownMenuItem @click="onEdit">Edit</DropdownMenuItem>
+         <DropdownMenuItem @click="onCopy">Make a copy</DropdownMenuItem>
+         <!-- <DropdownMenuItem>Favorite</DropdownMenuItem> -->
          <DropdownMenuSeparator />
-         <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Labels</DropdownMenuSubTrigger>
-            <DropdownMenuSubContent>
-               <DropdownMenuRadioGroup :value="task.label">
-                  <DropdownMenuRadioItem v-for="label in labels" :key="label.value" :value="label.value">
-                     {{ label.label }}
-                  </DropdownMenuRadioItem>
-               </DropdownMenuRadioGroup>
-            </DropdownMenuSubContent>
-         </DropdownMenuSub>
-         <DropdownMenuSeparator />
-         <DropdownMenuItem>
+         <DropdownMenuItem @click="onDelete">
             Delete
             <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
          </DropdownMenuItem>

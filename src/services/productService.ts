@@ -14,10 +14,23 @@ export interface ProductRequests {
  * @returns PaginatedProducts containing data and metadata.
  */
 export const getProducts = async (options: Record<string, any>): Promise<ProductRequests> => {
-   console.log(`API Call - /products?offset=${options.offset}&limit=${options.limit}`);
-   const response = await apiClient.get<Product[]>('/products', {
-      params: options,
+   const formattedFilters = formatParams({
+      title: options.title,
+      priceRange: options.priceRange,
    });
+
+   const params = {
+      offset: options.offset,
+      limit: options.limit,
+      ...formattedFilters, // Spread the formatted filters into the params object
+   };
+
+   console.log(`API Call - /products with params:`, params);
+
+   const response = await apiClient.get<Product[]>('/products', {
+      params: params,
+   });
+
    // console.log('response :>> ', response);
    return {
       data: response.data,
@@ -25,6 +38,27 @@ export const getProducts = async (options: Record<string, any>): Promise<Product
       offset: options.offset,
       limit: options.limit,
    };
+};
+
+const formatParams = (filters: { title?: string; priceRange?: { min?: number; max?: number } }) => {
+   const params: Record<string, any> = {};
+
+   // filter title if exists
+   if (filters.title) {
+      params['title'] = filters.title;
+   }
+
+   // filter price min if exists
+   if (filters.priceRange?.min !== undefined) {
+      params['price_min'] = filters.priceRange.min;
+   }
+
+   // filter price max if exists
+   if (filters.priceRange?.max !== undefined) {
+      params['price_max'] = filters.priceRange.max;
+   }
+
+   return params;
 };
 
 /**

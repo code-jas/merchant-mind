@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import DateRangePicker from './layout/DateRangePicker.vue';
 import MainNav from './layout/MainNav.vue';
 import Search from './layout/Search.vue';
 import UserNav from './layout/UserNav.vue';
-
-import { Button } from '@/components/ui/button';
 
 const route = useRoute();
 const pageTitle = ref('Dashboard');
@@ -49,10 +46,10 @@ watch(
             <h2 class="text-3xl font-bold tracking-tight">
                {{ pageTitle }}
             </h2>
-            <div class="flex items-center space-x-2">
+            <!-- <div class="flex items-center space-x-2">
                <DateRangePicker />
                <Button>Download</Button>
-            </div>
+            </div> -->
          </div>
          <slot />
       </div>
