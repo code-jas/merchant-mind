@@ -6,7 +6,7 @@ import * as z from 'zod';
 import { useProductStore } from '@/stores/productStore';
 import { useToast } from '@/components/ui/toast/use-toast';
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import {
    Dialog,
    DialogContent,
@@ -14,7 +14,6 @@ import {
    DialogFooter,
    DialogHeader,
    DialogTitle,
-   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import {
@@ -32,7 +31,7 @@ import { Product } from '@/types';
 
 const props = defineProps<{
    mode: 'create' | 'edit';
-   product?: Product;
+   product?: Product | null;
    isOpen: boolean;
    onClose: () => void;
 }>();
@@ -50,7 +49,7 @@ onMounted(() => {
 });
 
 // Computed property for categories
-const categories = computed(() => productStore.categories);
+const categories = computed(() => productStore.categories.map((e) => ({ name: e.name, value: e.id.toString() })));
 
 // Form Schema with preprocessing for categoryId
 const formSchema = toTypedSchema(
@@ -64,14 +63,14 @@ const formSchema = toTypedSchema(
 );
 
 // Initialize form
-const { handleSubmit, resetForm, values, errors, setValues, setFieldValue } = useForm({
+const { handleSubmit, resetForm, values, setValues, setFieldValue } = useForm({
    validationSchema: formSchema,
    initialValues: {
       categoryId: product?.categoryId ? product.categoryId.toString() : '',
       title: product?.title || '',
       price: product?.price || 0,
       description: product?.description || '',
-      images: product?.images.length ? [...product.images] : [''],
+      images: product?.images.length ? [...product.images] : ['https://picsum.photos/200/300?random=1'],
    },
 });
 
@@ -108,14 +107,14 @@ const isValidUrl = (url: string) => {
 watch(
    images,
    (newImages) => {
-      validImageUrls.value = newImages.filter((url) => isValidUrl(url));
+      validImageUrls.value = (newImages ?? []).filter((url) => isValidUrl(url));
    },
    { immediate: true }
 );
 
 // Validate individual image URL
 const validateImage = (index: number) => {
-   const url = images.value[index];
+   const url = (images.value ?? [])[index];
    if (isValidUrl(url)) {
       if (!validImageUrls.value.includes(url)) {
          validImageUrls.value.push(url);
@@ -127,22 +126,22 @@ const validateImage = (index: number) => {
 
 // Add a new image URL input
 const addImage = () => {
-   setFieldValue('images', [...images.value, '']); // Add a new empty string to the images array
+   setFieldValue('images', [...(images.value ?? []), '']);
 };
 
 // Remove an image URL input
 const removeImage = (index: number) => {
-   const newImages = [...images.value];
-   const removedUrl = newImages.splice(index, 1)[0]; // Retrieve the URL before splicing
-   setFieldValue('images', newImages); // Update the form's images array
-   validImageUrls.value = validImageUrls.value.filter((u) => u !== removedUrl); // Remove the URL from validImageUrls
+   const newImages = [...(images.value ?? [])];
+   const removedUrl = newImages.splice(index, 1)[0];
+   setFieldValue('images', newImages);
+   validImageUrls.value = validImageUrls.value.filter((u) => u !== removedUrl);
 };
 
 // Remove a valid image preview
 const removeValidImage = (url: string) => {
-   const index = images.value.indexOf(url);
+   const index = images.value?.indexOf(url) ?? -1;
    if (index !== -1) {
-      const newImages = [...images.value];
+      const newImages = [...(images.value ?? [])];
       newImages.splice(index, 1);
       setFieldValue('images', newImages);
       validImageUrls.value = validImageUrls.value.filter((u) => u !== url);
@@ -150,34 +149,37 @@ const removeValidImage = (url: string) => {
 };
 
 // Form Submission Handler
-const onSubmit = handleSubmit(async (formData: Product) => {
-   isSubmitting.value = true;
-   try {
-      if (mode === 'create') {
-         await productStore.createProduct(formData);
+const onSubmit = handleSubmit(
+   async (formData: { title: string; description: string; categoryId: number; price: number; images: string[] }) => {
+      isSubmitting.value = true;
+      try {
+         console.log('formData :>> ', formData);
+         if (mode === 'create') {
+            await productStore.createProduct(formData);
+            toast({
+               title: 'Success',
+               description: 'Product created successfully.',
+            });
+         } else if (mode === 'edit' && product) {
+            await productStore.updateProduct(product.id, formData);
+            toast({
+               title: 'Success',
+               description: 'Product updated successfully.',
+            });
+         }
+         resetForm();
+         onClose();
+      } catch (error: any) {
+         console.error(error.message);
          toast({
-            title: 'Success',
-            description: 'Product created successfully.',
+            title: 'Error',
+            description: error.message || 'An error occurred.',
          });
-      } else if (mode === 'edit' && product) {
-         await productStore.updateProduct(product.id, formData);
-         toast({
-            title: 'Success',
-            description: 'Product updated successfully.',
-         });
+      } finally {
+         isSubmitting.value = false;
       }
-      resetForm();
-      onClose();
-   } catch (error: any) {
-      console.error(error.message);
-      toast({
-         title: 'Error',
-         description: error.message || 'An error occurred.',
-      });
-   } finally {
-      isSubmitting.value = false;
    }
-});
+);
 
 // Reset form when modal is closed or opened
 watch(
@@ -216,7 +218,7 @@ watch(
                   <FormItem>
                      <FormLabel>Category</FormLabel>
                      <FormControl>
-                        <Select v-model="field.value">
+                        <Select v-bind="field">
                            <SelectTrigger>
                               <SelectValue placeholder="Select a category" />
                            </SelectTrigger>
@@ -225,8 +227,8 @@ watch(
                                  <SelectLabel>Categories</SelectLabel>
                                  <SelectItem
                                     v-for="category in categories"
-                                    :key="category.id"
-                                    :value="category.id.toString()"
+                                    :key="category.value"
+                                    :value="category.value"
                                  >
                                     {{ category.name }}
                                  </SelectItem>

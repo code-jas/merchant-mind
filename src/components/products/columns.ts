@@ -3,32 +3,32 @@ import { h } from 'vue';
 
 import DataTableColumnHeader from './DataTableColumnHeader.vue';
 // import DataTableRowActions from './DataTableRowActions.vue';
-import { Checkbox } from '@/components/ui/checkbox';
+// import { Checkbox } from '@/components/ui/checkbox';
 import { Icon } from '@iconify/vue';
 import { cn } from '@/lib/utils';
 import { Category, Product } from '@/data/schema';
 import placeholderImage from '@/assets/no-image-placeholder.jpg';
 
 export const columns: ColumnDef<Product>[] = [
-   {
-      id: 'select',
-      header: ({ table }) =>
-         h(Checkbox, {
-            checked: table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
-            'onUpdate:checked': (value) => table.toggleAllPageRowsSelected(!!value),
-            ariaLabel: 'Select all',
-            class: 'translate-y-0.5',
-         }),
-      cell: ({ row }) =>
-         h(Checkbox, {
-            checked: row.getIsSelected(),
-            'onUpdate:checked': (value) => row.toggleSelected(!!value),
-            ariaLabel: 'Select row',
-            class: 'translate-y-0.5',
-         }),
-      enableSorting: false,
-      enableHiding: false,
-   },
+   // {
+   //    id: 'select',
+   //    header: ({ table }) =>
+   //       h(Checkbox, {
+   //          checked: table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
+   //          'onUpdate:checked': (value) => table.toggleAllPageRowsSelected(!!value),
+   //          ariaLabel: 'Select all',
+   //          class: 'translate-y-0.5',
+   //       }),
+   //    cell: ({ row }) =>
+   //       h(Checkbox, {
+   //          checked: row.getIsSelected(),
+   //          'onUpdate:checked': (value) => row.toggleSelected(!!value),
+   //          ariaLabel: 'Select row',
+   //          class: 'translate-y-0.5',
+   //       }),
+   //    enableSorting: false,
+   //    enableHiding: false,
+   // },
    {
       accessorKey: 'id',
       size: 20,

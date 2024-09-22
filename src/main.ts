@@ -1,6 +1,11 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
+
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import './assets/styles/global.css';
+
 import App from './App.vue';
 import router from './router';
 

@@ -4,7 +4,7 @@ import apiClient from './apiClient';
 import { Category } from '@/types';
 
 export const getCategories = async (): Promise<Category[]> => {
-   const response = await apiClient.get<Category[]>('/categories');
+   const response = await apiClient.get<Category[]>('/categories?limit=30');
    return response.data;
 };
 

@@ -8,6 +8,7 @@ import { useProductStore } from '@/stores/productStore';
 import { columns } from '@/components/products/columns';
 import DataTable from '@/components/products/DataTable.vue';
 import FormModal from '@/components/products/FormModal.vue';
+import ViewModal from '@/components/products/ViewModal.vue';
 
 // store
 const productStore = useProductStore();
@@ -66,6 +67,7 @@ const handleCopy = async (product: Product) => {
    try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, ...productData } = product;
+      productData.categoryId = productData.category.id;
       await productStore.createProduct(productData);
       // TODO: show a toast notification
    } catch (error: any) {
@@ -124,6 +126,13 @@ onMounted(() => {
          :product="selectedProduct"
          :isOpen="isFormModalOpen"
          @close="closeFormModal"
+      />
+
+      <ViewModal
+         v-if="isViewModalOpen"
+         :isOpen="isViewModalOpen"
+         :product="selectedProduct"
+         @close="isViewModalOpen = false"
       />
    </div>
 </template>
