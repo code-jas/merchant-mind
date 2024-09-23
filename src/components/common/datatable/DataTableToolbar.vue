@@ -13,7 +13,7 @@ import { Filters, PriceRangeFilter } from '@/types';
 // Define props for the table and filters
 interface DataTableToolbarProps<T> {
    table: Table<T>;
-   filters: Filters;
+   filters: Filters | null;
 }
 
 const props = defineProps<DataTableToolbarProps<any>>();
@@ -22,7 +22,7 @@ const props = defineProps<DataTableToolbarProps<any>>();
 const { filters } = props;
 
 // Check if any filters are applied
-const isFiltered = computed(() => filters.title || filters.priceRange);
+const isFiltered = computed(() => filters?.title || filters?.priceRange);
 
 // Emit events to update filters
 const emit = defineEmits(['update:filters', 'create']);
@@ -53,14 +53,14 @@ const clearPriceRange = () => {
          <!-- title filter -->
          <Input
             placeholder="Product Name..."
-            :model-value="filters.title ?? ''"
+            :model-value="filters?.title ?? ''"
             class="h-8 w-[150px] lg:w-[250px]"
             @input="updatetitle($event.target.value)"
          />
 
          <!-- Price range filter -->
          <DataTablePriceRangeFilter
-            :priceRange="filters.priceRange ?? { min: undefined, max: undefined }"
+            :priceRange="filters?.priceRange ?? { min: undefined, max: undefined }"
             @update:priceRange="updatePriceRange"
             @clearFilter="clearPriceRange"
          />

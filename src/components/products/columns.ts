@@ -1,34 +1,15 @@
 import type { ColumnDef } from '@tanstack/table-core';
 import { h } from 'vue';
 
-import DataTableColumnHeader from './DataTableColumnHeader.vue';
 // import DataTableRowActions from './DataTableRowActions.vue';
 // import { Checkbox } from '@/components/ui/checkbox';
 import { Icon } from '@iconify/vue';
 import { cn } from '@/lib/utils';
 import { Category, Product } from '@/data/schema';
+import DataTableColumnHeader from '@/components/common/datatable/DataTableColumnHeader.vue';
 import placeholderImage from '@/assets/no-image-placeholder.jpg';
 
 export const columns: ColumnDef<Product>[] = [
-   // {
-   //    id: 'select',
-   //    header: ({ table }) =>
-   //       h(Checkbox, {
-   //          checked: table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && 'indeterminate'),
-   //          'onUpdate:checked': (value) => table.toggleAllPageRowsSelected(!!value),
-   //          ariaLabel: 'Select all',
-   //          class: 'translate-y-0.5',
-   //       }),
-   //    cell: ({ row }) =>
-   //       h(Checkbox, {
-   //          checked: row.getIsSelected(),
-   //          'onUpdate:checked': (value) => row.toggleSelected(!!value),
-   //          ariaLabel: 'Select row',
-   //          class: 'translate-y-0.5',
-   //       }),
-   //    enableSorting: false,
-   //    enableHiding: false,
-   // },
    {
       accessorKey: 'id',
       size: 20,
@@ -46,7 +27,7 @@ export const columns: ColumnDef<Product>[] = [
          const firstImage = images[0];
 
          if (!firstImage) {
-            return h('div', { class: 'w-1/5 flex justify-center items-center' }, [
+            return h('div', { class: 'w-1/5 flex  items-center' }, [
                h('img', {
                   src: placeholderImage,
                   alt: `No image available for ${row.getValue('title')}`,
@@ -60,7 +41,7 @@ export const columns: ColumnDef<Product>[] = [
          }
          return h(
             'div',
-            { class: 'flex justify-center items-center' }, // Center the image within the cell
+            { class: 'flex items-center' }, // Center the image within the cell
             [
                h('img', {
                   src: firstImage,
@@ -96,22 +77,6 @@ export const columns: ColumnDef<Product>[] = [
       },
    },
    {
-      accessorKey: 'price',
-      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Price' }),
-
-      cell: ({ row }) => {
-         return h('div', { class: 'flex w-[100px] items-center' }, [
-            h(h(Icon, { icon: 'lucide:dollar-sign' }), {
-               class: 'mr-2 h-4 w-4 text-muted-foreground',
-            }),
-            h('span', row.getValue('price')),
-         ]);
-      },
-      filterFn: (row, id, value) => {
-         return value.includes(row.getValue(id));
-      },
-   },
-   {
       accessorKey: 'category',
       header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Category' }),
       cell: ({ row }) => {
@@ -128,7 +93,29 @@ export const columns: ColumnDef<Product>[] = [
       },
    },
    {
+      accessorKey: 'price',
+      header: ({ column }) => h(DataTableColumnHeader, { column, title: 'Price' }),
+      cell: ({ row }) => {
+         return h(
+            'span',
+            {
+               class: 'inline-flex items-center justify-center bg-purple-100 text-primary text-base px-3 py-1 rounded-full',
+            },
+            [
+               h(Icon, {
+                  icon: 'lucide:dollar-sign',
+                  class: 'mr-1 h-4 w-4 text-primary',
+               }),
+               h('span', { class: 'font-semibold' }, `${(row.getValue('price') as number).toFixed(2)}`),
+            ]
+         );
+      },
+
+      filterFn: (row, id, value) => {
+         return value.includes(row.getValue(id));
+      },
+   },
+   {
       id: 'actions',
-      // cell: ({ row }) => h(DataTableRowActions, { row }),
    },
 ];

@@ -9,8 +9,8 @@ import {
    getTotalProducts,
 } from '@/services/productService';
 
-import { getCategories } from '@/services/categoryServices';
-import { Category, PriceRangeFilter, Product } from '@/types';
+import { getCategories } from '@/services/categoryService';
+import { Category, Product } from '@/types';
 
 interface Filters {
    [key: string]: any;
@@ -25,13 +25,7 @@ export const useProductStore = defineStore('product', {
       offset: 0,
       limit: 10,
       totalItems: 0,
-      filters: {
-         title: '',
-         priceRange: {
-            min: undefined,
-            max: undefined,
-         } as PriceRangeFilter,
-      } as Filters,
+      filters: {} as Filters,
    }),
 
    getters: {

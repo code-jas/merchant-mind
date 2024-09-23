@@ -71,7 +71,7 @@ const handlePageSizeChange = (value: string) => {
          <!-- Example: Show selected rows if applicable -->
          <!-- Adjust as needed -->
          <!-- {{ selectedCount }} of {{ total }} row(s) selected. -->
-         {{ table.getFilteredSelectedRowModel().rows.length }} of {{ total }} row(s) selected.
+         <!-- {{ table.getFilteredSelectedRowModel().rows.length }} of {{ total }} row(s) selected. -->
       </div>
 
       <div class="flex items-center space-x-6 lg:space-x-8">

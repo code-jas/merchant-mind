@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ColumnDef, ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
+import type { ColumnFiltersState, SortingState, VisibilityState } from '@tanstack/vue-table';
 import {
    FlexRender,
    getCoreRowModel,
@@ -16,20 +16,12 @@ import DataTablePagination from './DataTablePagination.vue';
 import DataTableToolbar from './DataTableToolbar.vue';
 import { valueUpdater } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Product } from '@/data/schema';
 import { useProductStore } from '@/stores/productStore';
-import { Filters } from '@/types';
 
 import DataTableRowActions from './DataTableRowActions.vue';
+import { DataTableProps } from './types';
 
-interface DataTableProps {
-   columns: ColumnDef<Product, any>[];
-   data: Product[];
-   filters: Filters;
-   loading: boolean;
-}
-
-const props = defineProps<DataTableProps>();
+const props = defineProps<DataTableProps<any>>();
 const emit = defineEmits([
    'create',
    'view',
@@ -76,7 +68,7 @@ const table = useVueTable({
       },
    },
    enableRowSelection: true,
-   manualPagination: true, // Server-side pagination
+   manualPagination: props.manualPagination, // Server-side pagination
    manualSorting: false,
    onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
    onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
@@ -97,7 +89,7 @@ const table = useVueTable({
       <slot name="toolbar" :table="table">
          <DataTableToolbar
             :table="table"
-            :filters="filters"
+            :filters="filters || null"
             @create="emit('create')"
             @update:filters="emit('filter-change', $event)"
          />

@@ -3,17 +3,16 @@ import { computed, onMounted, ref } from 'vue';
 
 import { Product } from '@/types';
 import { useProductStore } from '@/stores/productStore';
-// import DataTablePagination from '@/components/products/DataTablePagination.vue';
-// import DataTableToolbar from '@/components/products/DataTableToolbar.vue';
 import { columns } from '@/components/products/columns';
-import DataTable from '@/components/products/DataTable.vue';
-import FormModal from '@/components/products/FormModal.vue';
-import ViewModal from '@/components/products/ViewModal.vue';
+import DataTable from '@/components/common/datatable/DataTable.vue';
+import FormModal from '@/components/common/modals/FormModal.vue';
+import ViewModal from '@/components/common/modals/ViewModal.vue';
+import { DataTableEvents, DataTableProps } from '@/components/common/datatable/types';
 
-// store
+// Init store
 const productStore = useProductStore();
 
-// computed
+// Computed properties
 const data = computed(() => productStore.products);
 const totalItems = computed(() => productStore.totalItems);
 const offset = computed(() => productStore.offset);
@@ -90,6 +89,28 @@ const handleDelete = async (productId: number) => {
 //    await productStore.updateProduct(updatedProduct.id, updatedProduct);
 //    isEditModalOpen.value = false;
 // };
+
+const dataTableProps = computed<DataTableProps<Product>>(() => ({
+   data: data.value,
+   columns,
+   filters: filters.value,
+   totalItems: totalItems.value,
+   manualPagination: true,
+   offset: offset.value,
+   limit: limit.value,
+   loading: productStore.isLoading,
+}));
+
+const dataTableEvents: DataTableEvents<Product, keyof Product> = {
+   'page-change': handlePageChange,
+   'page-size-change': handlePageSizeChange,
+   'filter-change': handleFilterChange,
+   create: openCreateModal,
+   view: handleView,
+   edit: openEditModal,
+   copy: handleCopy,
+   delete: handleDelete,
+};
 onMounted(() => {
    productStore.initialize();
 });
@@ -98,24 +119,8 @@ onMounted(() => {
 <template>
    <div>
       <div>
-         <div class="hidden h-full flex-1 flex-col space-y-8 p-8 md:flex">
-            <DataTable
-               :data="data"
-               :columns="columns"
-               :filters="filters"
-               :totalItems="totalItems"
-               :offset="offset"
-               :limit="limit"
-               :loading="productStore.isLoading"
-               @page-change="handlePageChange"
-               @page-size-change="handlePageSizeChange"
-               @filter-change="handleFilterChange"
-               @create="openCreateModal"
-               @view="handleView"
-               @edit="openEditModal"
-               @copy="handleCopy"
-               @delete="handleDelete"
-            />
+         <div class="flex h-full flex-1 flex-col space-y-8 p-8">
+            <DataTable v-bind="dataTableProps" v-on="dataTableEvents" />
          </div>
       </div>
 

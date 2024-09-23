@@ -1,9 +1,3 @@
-<template>
-   <div :class="computedClass">
-      <img :src="imageUrl" alt="Grid Image" class="w-full h-full object-cover rounded-lg" />
-   </div>
-</template>
-
 <script setup>
 import { computed, defineProps } from 'vue';
 
@@ -19,3 +13,9 @@ const computedClass = computed(() =>
    ].join(' ')
 );
 </script>
+
+<template>
+   <div :class="computedClass">
+      <img :src="imageUrl" alt="Grid Image" class="w-full h-full object-cover rounded-lg" />
+   </div>
+</template>

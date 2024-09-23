@@ -1,3 +1,136 @@
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue';
+import type { ColumnDef } from '@tanstack/table-core';
+import { Category } from '@/types';
+import { categoryColumns as columns } from '@/components/categories/columns';
+import { useCategoryStore } from '@/stores/categoryStore';
+
+import DataTable from '@/components/common/datatable/DataTable.vue';
+import { DataTableEvents, DataTableProps } from '@/components/common/datatable/types';
+
+import ViewModal from '@/components/common/modals/ViewModal.vue';
+import CategoryFormModal from '@/components/common/modals/CategoryFormModal.vue';
+
+// Init store
+const categoryStore = useCategoryStore();
+
+// Computed properties
+const data = computed(() => categoryStore.categories);
+const totalItems = computed(() => categoryStore.totalItems);
+const offset = computed(() => categoryStore.offset);
+const limit = computed(() => categoryStore.limit);
+const isLoading = computed(() => categoryStore.isLoading);
+
+// const error = computed(() => categoryStore.error);
+
+// Modal state
+const isViewModalOpen = ref(false);
+const isFormModalOpen = ref(false);
+const modalMode = ref<'create' | 'edit'>('create');
+const selectedCategory = ref<Category | null>(null);
+
+const handlePageChange = (newOffset: number) => {
+   categoryStore.setOffset(newOffset);
+};
+
+const handlePageSizeChange = (newLimit: number) => {
+   categoryStore.setLimit(newLimit);
+};
+
+// const handleFilterChange = (filters: Record<string, any>) => {};
+
+// Handler to open the create product modal
+const openCreateModal = () => {
+   console.log('test create modal clicked');
+   modalMode.value = 'create';
+   selectedCategory.value = null;
+   isFormModalOpen.value = true;
+};
+const openEditModal = (product: Category) => {
+   modalMode.value = 'edit';
+   selectedCategory.value = product;
+   isFormModalOpen.value = true;
+};
+
+const closeFormModal = () => {
+   isFormModalOpen.value = false;
+};
+
+const handleView = (category: Category) => {
+   selectedCategory.value = category;
+   isViewModalOpen.value = true;
+};
+
+// const handleCopy = async (product: Product) => {
+//    try {
+//       const { id, ...productData } = product;
+//       productData.category = currentCategory.value as Category;
+//       await categoryStore.createNewProduct(productData);
+//       // TODO: Show a toast notification for success
+//    } catch (error: any) {
+//       console.error('Copy Product Error:', error.message);
+//       // TODO: Show a toast notification for error
+//    }
+// };
+
+const handleDelete = async (categoryId: number) => {
+   if (confirm(`Are you sure you want to delete product with ID ${categoryId}?`)) {
+      try {
+         await categoryStore.deleteExistingCategory(categoryId);
+         // TODO: Show a toast notification for success
+      } catch (error: any) {
+         console.error('Delete Product Error:', error.message);
+         // TODO: Show a toast notification for error
+      }
+   }
+};
+const dataTableProps = computed<DataTableProps<Category>>(() => ({
+   data: data.value,
+   columns: columns as ColumnDef<Category, any>[],
+   totalItems: totalItems.value,
+   manualPagination: true,
+   offset: offset.value,
+   limit: limit.value,
+   loading: isLoading.value,
+}));
+
+const dataTableEvents: DataTableEvents<Category, keyof Category> = {
+   'page-change': handlePageChange,
+   'page-size-change': handlePageSizeChange,
+   create: openCreateModal,
+   view: handleView,
+   edit: openEditModal,
+   delete: handleDelete,
+};
+
+// Fetch category and its products on component mount
+onMounted(() => {
+   categoryStore.fetchCategories();
+});
+</script>
+
 <template>
-   <div>Categories</div>
+   <div>
+      <div>
+         <div class="flex h-full flex-1 flex-col space-y-8 p-8">
+            <DataTable v-bind="dataTableProps" v-on="dataTableEvents" />
+            <pre>{{ data }}</pre>
+         </div>
+      </div>
+
+      <CategoryFormModal
+         v-if="isFormModalOpen"
+         :mode="modalMode"
+         :product="selectedCategory"
+         :isOpen="isFormModalOpen"
+         @close="closeFormModal"
+      />
+
+      <!-- <ViewModal
+         v-if="isViewModalOpen"
+         :isOpen="isViewModalOpen"
+         :product="selectedCategory"
+         @close="isViewModalOpen = false"
+      /> -->
+   </div>
 </template>

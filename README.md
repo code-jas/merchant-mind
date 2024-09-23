@@ -4,9 +4,8 @@
 -  [x] Authentication Module
 -  [x] Layout and Navigation
 -  [ ] Dashboard Module
--  [ ] Product Management Module
--  [ ] Category Management Module
--  [ ] Users Management Module
+-  [x] Product Management Module
+-  [x] Category Management Module
 -  [ ] Enhancements UI/UX
 
 # Vue 3 + TypeScript + Vite
