@@ -3,6 +3,7 @@ import { login as loginService, getProfile } from '@/services/authService';
 import { LoginCredentials, User } from '@/types';
 import router from '@/router';
 import { useToast } from '@/components/ui/toast';
+
 const { toast } = useToast();
 
 interface AuthState {
@@ -17,6 +18,7 @@ export const useAuthStore = defineStore('auth', {
    }),
    getters: {
       isAuthenticated: (state): boolean => !!state.token,
+      isAdmin: (state): boolean => state.user?.role === 'admin',
    },
    actions: {
       async login(credentials: LoginCredentials) {
@@ -25,27 +27,37 @@ export const useAuthStore = defineStore('auth', {
             this.token = response.access_token;
             localStorage.setItem('token', this.token);
 
-            // Optionally, fetch user profile
+            // Fetch user profile
             this.user = await getProfile();
-            console.log('this.user :>> ', this.user);
+            console.log('Logged in user:', this.user);
+
+            // Validate user role
+            if (this.user.role !== 'admin') {
+               throw new Error('Access denied: Admins only.');
+            }
 
             // Redirect to dashboard
             router.push('/dashboard');
 
             toast({
                title: 'Login Successful',
-               description: 'You have successfully logged in.',
+               description: 'You have successfully logged in as an admin.',
             });
          } catch (error: any) {
             console.error('Login error:', error);
 
             let message = 'An error occurred during login.';
 
-            // Check for Axios error and handle 401 Unauthorized error
+            // Handle specific error messages
             if (error.response && error.response.status === 401) {
                message = 'Unauthorized: Incorrect username or password.';
             } else if (error.message) {
                message = error.message; // Fallback to the error message if available
+            }
+
+            // If role validation fails, perform logout
+            if (message === 'Access denied: Admins only.') {
+               this.logout();
             }
 
             toast({
@@ -60,19 +72,32 @@ export const useAuthStore = defineStore('auth', {
          this.user = null;
          localStorage.removeItem('token');
          router.push('/login');
+         toast({
+            title: 'Logged Out',
+            description: 'You have been successfully logged out.',
+         });
       },
-      initializeAuth() {
+      async initializeAuth() {
          const token = localStorage.getItem('token');
          if (token) {
             this.token = token;
-            // Optionally, fetch user profile
-            getProfile()
-               .then((user) => {
-                  this.user = user;
-               })
-               .catch(() => {
-                  this.logout();
+            try {
+               // Fetch user profile
+               this.user = await getProfile();
+
+               // Optionally, validate user role upon initialization
+               if (this.user.role !== 'admin') {
+                  throw new Error('Access denied: Admins only.');
+               }
+            } catch (error) {
+               console.error('Initialization error:', error);
+               this.logout();
+               toast({
+                  title: 'Access Denied',
+                  description: 'You do not have permission to access this application.',
+                  variant: 'destructive',
                });
+            }
          }
       },
    },

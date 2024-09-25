@@ -12,7 +12,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 const authStore = useAuthStore();
 const router = useRouter();
 
-const { handleSubmit, values, errors } = useForm<LoginSchema>({
+const { handleSubmit, errors } = useForm<LoginSchema>({
    validationSchema: toTypedSchema(loginSchema),
    initialValues: {
       email: 'admin@mail.com',
@@ -53,7 +53,12 @@ const onSubmit = handleSubmit(async (formValues) => {
                   <FormItem>
                      <FormLabel>Email</FormLabel>
                      <FormControl>
-                        <Input type="email" v-bind="field" placeholder="Enter your email" />
+                        <Input
+                           type="email"
+                           v-bind="field"
+                           v-model:model-value="field.value"
+                           placeholder="Enter your email"
+                        />
                      </FormControl>
                      <FormMessage>{{ errors.email }}</FormMessage>
                   </FormItem>
@@ -62,7 +67,12 @@ const onSubmit = handleSubmit(async (formValues) => {
                   <FormItem>
                      <FormLabel>Password</FormLabel>
                      <FormControl>
-                        <Input type="password" v-bind="field" placeholder="Enter your password" />
+                        <Input
+                           type="password"
+                           v-bind="field"
+                           v-model:model-value="field.value"
+                           placeholder="Enter your password"
+                        />
                      </FormControl>
                      <FormMessage>{{ errors.password }}</FormMessage>
                   </FormItem>
@@ -73,8 +83,6 @@ const onSubmit = handleSubmit(async (formValues) => {
             </CardFooter>
          </form>
       </Card>
-
-      {{ values }}
    </div>
 </template>
 
