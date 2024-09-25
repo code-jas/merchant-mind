@@ -6,8 +6,6 @@ const Login = () => import('@/views/LoginView.vue');
 const Dashboard = () => import('@/views/DashboardView.vue');
 const Products = () => import('@/views/ProductsView.vue');
 const Categories = () => import('@/views/CategoriesView.vue');
-const Users = () => import('@/views/UsersView.vue');
-const Settings = () => import('@/views/SettingsView.vue');
 
 // Define your routes with meta.layout
 const routes: Array<RouteRecordRaw> = [
@@ -34,18 +32,6 @@ const routes: Array<RouteRecordRaw> = [
       name: 'Categories',
       component: Categories,
       meta: { requiresAuth: true, layout: 'main', title: 'Categories' },
-   },
-   {
-      path: '/users',
-      name: 'Users',
-      component: Users,
-      meta: { requiresAuth: true, layout: 'main', title: 'Users' },
-   },
-   {
-      path: '/settings',
-      name: 'Settings',
-      component: Settings,
-      meta: { requiresAuth: true, layout: 'main', title: 'Settings' },
    },
    // Optional: Catch-all route for 404 Not Found
    {

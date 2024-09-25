@@ -46,7 +46,7 @@ const formatParams = (filters: {
  * @param options - Object containing offset, limit, and optional filters (title, priceRange).
  * @returns A promise that resolves to a `ProductRequests` object containing the fetched products and pagination metadata.
  */
-export const getProducts = async (options: Record<string, any>): Promise<ProductRequests> => {
+export const getProducts = async (options: Record<string, any> = {}): Promise<ProductRequests> => {
    const formattedFilters = formatParams({
       title: options.title,
       priceRange: options.priceRange,

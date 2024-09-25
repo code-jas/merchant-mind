@@ -55,6 +55,10 @@ const openEditModal = (product: Product) => {
 
 const closeFormModal = () => {
    isFormModalOpen.value = false;
+
+   setTimeout(() => {
+      selectedProduct.value = null;
+   }, 0);
 };
 
 const handleView = (product: Product) => {
@@ -99,6 +103,7 @@ const dataTableProps = computed<DataTableProps<Product>>(() => ({
    offset: offset.value,
    limit: limit.value,
    loading: productStore.isLoading,
+   actions: ['view', 'edit', 'copy', 'delete'],
 }));
 
 const dataTableEvents: DataTableEvents<Product, keyof Product> = {
@@ -136,7 +141,8 @@ onMounted(() => {
       <ViewModal
          v-if="isViewModalOpen"
          :isOpen="isViewModalOpen"
-         :product="selectedProduct"
+         :data="selectedProduct"
+         viewType="product"
          @close="isViewModalOpen = false"
       />
    </div>

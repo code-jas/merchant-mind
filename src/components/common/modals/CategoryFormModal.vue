@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, toRefs } from 'vue';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
@@ -18,21 +18,20 @@ import { Input } from '@/components/ui/input';
 import { Icon } from '@iconify/vue';
 
 import { useCategoryStore } from '@/stores/categoryStore';
+import { Category } from '@/data/schema';
 
 const categoryStore = useCategoryStore();
 
-const props = defineProps<{
+interface CategoriesFormModalProps {
    mode: 'create' | 'edit';
-   category?: {
-      id(id: any, formData: { id?: number; name: string; image: string }): unknown;
-      name: string;
-      image: string;
-   } | null;
+   category?: Category | null;
    isOpen: boolean;
    onClose: () => void;
-}>();
+}
 
-const { mode, category, isOpen, onClose } = props;
+const props = defineProps<CategoriesFormModalProps>();
+
+const { mode, category, isOpen, onClose } = toRefs(props);
 const { toast } = useToast();
 
 // Form Schema
@@ -44,19 +43,19 @@ const formSchema = toTypedSchema(
 );
 
 // Initialize form
-const { handleSubmit, resetForm, setValues } = useForm({
+const { handleSubmit, resetForm, setValues, values } = useForm({
    validationSchema: formSchema,
    initialValues: {
-      name: category?.name || '',
-      image: category?.image || '',
+      name: category.value?.name || '',
+      image: category.value?.image || '',
    },
 });
 
 // Modal Title
-const modalTitle = computed(() => (mode === 'create' ? 'Create Category' : 'Edit Category'));
+const modalTitle = computed(() => (mode.value === 'create' ? 'Create Category' : 'Edit Category'));
 
 // Submit Button Text
-const submitButtonText = computed(() => (mode === 'create' ? 'Create' : 'Update'));
+const submitButtonText = computed(() => (mode.value === 'create' ? 'Create' : 'Update'));
 
 // Submission State
 const isSubmitting = ref(false);
@@ -66,17 +65,22 @@ const onSubmit = handleSubmit(async (formData: { id?: number; name: string; imag
    isSubmitting.value = true;
    try {
       console.log('formData :>> ', formData);
-      if (mode === 'create') {
+      console.log('mode :>> ', mode);
+      console.log('category :>> ', category);
+      if (mode.value === 'create') {
          await categoryStore.createNewCategory(formData);
-      } else if (mode === 'edit' && category) {
-         await categoryStore.updateExistingCategory(Number(category.id), formData);
+      } else if (mode.value === 'edit' && category) {
+         console.log('edit :>> ', category);
+         if (category.value) {
+            await categoryStore.updateExistingCategory(Number(category.value.id), formData);
+         }
       }
       toast({
          title: 'Success',
-         description: mode === 'create' ? 'Category created successfully.' : 'Category updated successfully.',
+         description: mode.value === 'create' ? 'Category created successfully.' : 'Category updated successfully.',
       });
       resetForm();
-      onClose();
+      onClose.value();
    } catch (error: any) {
       console.error(error.message);
       toast({
@@ -90,17 +94,21 @@ const onSubmit = handleSubmit(async (formData: { id?: number; name: string; imag
 
 // Reset form when modal is closed or opened
 watch(
-   () => isOpen,
+   isOpen,
    (newVal) => {
+      console.log('category watch :>> ', category);
       if (!newVal) {
          resetForm();
-      } else if (mode === 'edit' && category) {
+      } else if (mode.value === 'edit' && category.value) {
          setValues({
-            name: category.name || '',
-            image: category.image || '',
+            name: category.value.name || '',
+            image: category.value.image || '',
          });
+
+         console.log('values :>> ', values);
       }
-   }
+   },
+   { immediate: true, deep: true }
 );
 </script>
 
@@ -125,7 +133,7 @@ watch(
                   <FormItem>
                      <FormLabel>Category Name</FormLabel>
                      <FormControl>
-                        <Input v-bind="field" placeholder="Category Name" />
+                        <Input v-bind="field" v-model:model-value="field.value" placeholder="Category Name" />
                      </FormControl>
                      <FormMessage />
                   </FormItem>
@@ -136,7 +144,11 @@ watch(
                   <FormItem>
                      <FormLabel>Image URL</FormLabel>
                      <FormControl>
-                        <Input v-bind="field" placeholder="https://example.com/image.jpg" />
+                        <Input
+                           v-bind="field"
+                           v-model:model-value="field.value"
+                           placeholder="https://example.com/image.jpg"
+                        />
                      </FormControl>
                      <FormMessage />
                   </FormItem>

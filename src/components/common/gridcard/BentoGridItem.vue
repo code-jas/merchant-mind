@@ -8,7 +8,7 @@ const props = defineProps({
 
 const computedClass = computed(() =>
    [
-      'row-span-1 rounded-xl hover:shadow-xl transition duration-200 shadow-input dark:shadow-none p-4 dark:bg-black dark:border-white/[0.2] bg-white border border-transparent',
+      'row-span-1 rounded-xl hover:shadow-xl  transition duration-200 shadow-input overflow-hidden dark:shadow-none p-4 dark:bg-black dark:border-white/[0.2] bg-white border border-transparent ',
       props.className,
    ].join(' ')
 );
@@ -16,6 +16,10 @@ const computedClass = computed(() =>
 
 <template>
    <div :class="computedClass">
-      <img :src="imageUrl" alt="Grid Image" class="w-full h-full object-cover rounded-lg" />
+      <img
+         :src="imageUrl"
+         alt="Grid Image"
+         class="w-full h-full object-cover rounded-xl transition-transform duration-300 transform"
+      />
    </div>
 </template>

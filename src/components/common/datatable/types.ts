@@ -18,6 +18,7 @@ export interface DataTableProps<T> {
    offset?: number;
    limit?: number;
    loading: boolean;
+   actions?: string[];
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

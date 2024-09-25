@@ -46,9 +46,11 @@ const openCreateModal = () => {
    selectedCategory.value = null;
    isFormModalOpen.value = true;
 };
-const openEditModal = (product: Category) => {
+
+const openEditModal = (category: Category) => {
+   console.log('category :>> ', category);
    modalMode.value = 'edit';
-   selectedCategory.value = product;
+   selectedCategory.value = category;
    isFormModalOpen.value = true;
 };
 
@@ -60,18 +62,6 @@ const handleView = (category: Category) => {
    selectedCategory.value = category;
    isViewModalOpen.value = true;
 };
-
-// const handleCopy = async (product: Product) => {
-//    try {
-//       const { id, ...productData } = product;
-//       productData.category = currentCategory.value as Category;
-//       await categoryStore.createNewProduct(productData);
-//       // TODO: Show a toast notification for success
-//    } catch (error: any) {
-//       console.error('Copy Product Error:', error.message);
-//       // TODO: Show a toast notification for error
-//    }
-// };
 
 const handleDelete = async (categoryId: number) => {
    if (confirm(`Are you sure you want to delete product with ID ${categoryId}?`)) {
@@ -92,6 +82,7 @@ const dataTableProps = computed<DataTableProps<Category>>(() => ({
    offset: offset.value,
    limit: limit.value,
    loading: isLoading.value,
+   actions: ['view', 'edit', 'delete'],
 }));
 
 const dataTableEvents: DataTableEvents<Category, keyof Category> = {
@@ -114,23 +105,23 @@ onMounted(() => {
       <div>
          <div class="flex h-full flex-1 flex-col space-y-8 p-8">
             <DataTable v-bind="dataTableProps" v-on="dataTableEvents" />
-            <pre>{{ data }}</pre>
          </div>
       </div>
 
       <CategoryFormModal
          v-if="isFormModalOpen"
          :mode="modalMode"
-         :product="selectedCategory"
+         :category="selectedCategory"
          :isOpen="isFormModalOpen"
          @close="closeFormModal"
       />
 
-      <!-- <ViewModal
+      <ViewModal
          v-if="isViewModalOpen"
          :isOpen="isViewModalOpen"
-         :product="selectedCategory"
+         :data="selectedCategory"
+         viewType="category"
          @close="isViewModalOpen = false"
-      /> -->
+      />
    </div>
 </template>

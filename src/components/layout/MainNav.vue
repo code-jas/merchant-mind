@@ -51,16 +51,6 @@ defineProps<MainNavProps>();
       >
          Categories
       </RouterLink>
-      <RouterLink
-         to="/users"
-         :class="
-            cn('text-sm font-medium transition-colors hover:text-primary', {
-               'font-bold': currentRoute === 'Users',
-            })
-         "
-      >
-         Users
-      </RouterLink>
    </nav>
 </template>
 

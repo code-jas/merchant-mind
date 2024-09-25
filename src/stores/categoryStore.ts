@@ -124,8 +124,13 @@ export const useCategoryStore = defineStore('category', {
          try {
             const updatedCategory = await updateCategory(id, categoryData);
             const index = this.categories.findIndex((cat) => cat.id === id);
+
+            console.log(`Index found: ${index}`);
+
             if (index !== -1) {
+               console.log(`Category found at index ${index}:`, this.categories[index]);
                this.categories[index] = updatedCategory;
+               console.log(`Category updated to:`, this.categories[index]);
             }
             if (this.currentCategory?.id === id) {
                this.currentCategory = updatedCategory;

@@ -52,6 +52,7 @@ const clearPriceRange = () => {
       <div class="flex flex-1 items-center space-x-2">
          <!-- title filter -->
          <Input
+            v-if="filters"
             placeholder="Product Name..."
             :model-value="filters?.title ?? ''"
             class="h-8 w-[150px] lg:w-[250px]"
@@ -60,24 +61,11 @@ const clearPriceRange = () => {
 
          <!-- Price range filter -->
          <DataTablePriceRangeFilter
+            v-if="filters"
             :priceRange="filters?.priceRange ?? { min: undefined, max: undefined }"
             @update:priceRange="updatePriceRange"
             @clearFilter="clearPriceRange"
          />
-
-         <!-- Faceted filters for other columns -->
-         <!-- <DataTableFacetedFilter
-   v-if="table.getColumn('price')"
-   :column="table.getColumn('price')"
-   title="Prices"
-   :options="statuses"
-/>
-<DataTableFacetedFilter
-   v-if="table.getColumn('priority')"
-   :column="table.getColumn('priority')"
-   title="Priority"
-   :options="priorities"
-/> -->
 
          <!-- Reset filters button -->
          <Button

@@ -11,11 +11,12 @@ import {
    useVueTable,
 } from '@tanstack/vue-table';
 
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import DataTablePagination from './DataTablePagination.vue';
 import DataTableToolbar from './DataTableToolbar.vue';
 import { valueUpdater } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import Loading from '@/components/Loading.vue';
 import { useProductStore } from '@/stores/productStore';
 
 import DataTableRowActions from './DataTableRowActions.vue';
@@ -41,46 +42,50 @@ const limit = computed(() => productStore.limit);
 const totalItems = computed(() => productStore.totalItems);
 
 // Setup table using @tanstack/vue-table
+
 const sorting = ref<SortingState>([]);
 const columnFilters = ref<ColumnFiltersState>([]);
 const columnVisibility = ref<VisibilityState>({});
 const rowSelection = ref({});
 
-const table = useVueTable({
-   get data() {
-      return props.data;
+const table = ref(
+   useVueTable({
+      data: props.data,
+      columns: props.columns,
+      state: {
+         sorting: sorting.value,
+         columnFilters: columnFilters.value,
+         columnVisibility: columnVisibility.value,
+         rowSelection: rowSelection.value,
+      },
+      enableRowSelection: true,
+      manualPagination: props.manualPagination, // Server-side pagination
+      manualSorting: false,
+      onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
+      onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
+      onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
+      onRowSelectionChange: (updaterOrValue) => valueUpdater(updaterOrValue, rowSelection),
+      getCoreRowModel: getCoreRowModel(),
+      getFilteredRowModel: getFilteredRowModel(),
+      getPaginationRowModel: getPaginationRowModel(),
+      getSortedRowModel: getSortedRowModel(),
+      getFacetedRowModel: getFacetedRowModel(),
+      getFacetedUniqueValues: getFacetedUniqueValues(),
+   })
+);
+
+watch(
+   () => props.data,
+   (newData) => {
+      table.value = useVueTable({
+         ...table.value.options,
+         data: newData,
+      });
    },
-   get columns() {
-      return props.columns;
-   },
-   state: {
-      get sorting() {
-         return sorting.value;
-      },
-      get columnFilters() {
-         return columnFilters.value;
-      },
-      get columnVisibility() {
-         return columnVisibility.value;
-      },
-      get rowSelection() {
-         return rowSelection.value;
-      },
-   },
-   enableRowSelection: true,
-   manualPagination: props.manualPagination, // Server-side pagination
-   manualSorting: false,
-   onSortingChange: (updaterOrValue) => valueUpdater(updaterOrValue, sorting),
-   onColumnFiltersChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnFilters),
-   onColumnVisibilityChange: (updaterOrValue) => valueUpdater(updaterOrValue, columnVisibility),
-   onRowSelectionChange: (updaterOrValue) => valueUpdater(updaterOrValue, rowSelection),
-   getCoreRowModel: getCoreRowModel(),
-   getFilteredRowModel: getFilteredRowModel(),
-   getPaginationRowModel: getPaginationRowModel(),
-   getSortedRowModel: getSortedRowModel(),
-   getFacetedRowModel: getFacetedRowModel(),
-   getFacetedUniqueValues: getFacetedUniqueValues(),
-});
+   { deep: true }
+);
+
+const actions = computed(() => props.actions || []);
 </script>
 
 <template>
@@ -97,7 +102,9 @@ const table = useVueTable({
 
       <!-- Table Structure -->
 
-      <div v-if="loading" class="text-center">Loading products...</div>
+      <div v-if="loading" class="text-center">
+         <Loading />
+      </div>
 
       <div v-else class="rounded-md border">
          <Table>
@@ -119,11 +126,12 @@ const table = useVueTable({
                      :key="row.id"
                      :data-state="row.getIsSelected() && 'selected'"
                   >
-                     <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id">
+                     <TableCell v-for="cell in row.getVisibleCells()" :key="cell.id" :loading="loading">
                         <div v-if="cell.column.id == 'actions'">
                            <!-- <pre>{{ cell.row.original }}</pre> -->
                            <DataTableRowActions
                               :product="cell.row.original"
+                              :actions="actions"
                               @view="emit('view', $event)"
                               @edit="emit('edit', $event)"
                               @copy="emit('copy', $event)"

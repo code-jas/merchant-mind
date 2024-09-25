@@ -14,6 +14,7 @@ import {
 
 interface DataTableRowActionsProps {
    product: Product;
+   actions: string[];
 }
 const props = defineProps<DataTableRowActionsProps>();
 
@@ -24,7 +25,6 @@ const onView = () => {
 };
 
 const onEdit = () => {
-   console.log('test edit');
    emit('edit', props.product);
 };
 
@@ -46,14 +46,13 @@ const onDelete = () => {
          </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" class="w-[160px]">
-         <DropdownMenuItem @click="onView">View</DropdownMenuItem>
-         <DropdownMenuItem @click="onEdit">Edit</DropdownMenuItem>
-         <DropdownMenuItem @click="onCopy">Make a copy</DropdownMenuItem>
-         <!-- <DropdownMenuItem>Favorite</DropdownMenuItem> -->
+         <DropdownMenuItem v-if="props.actions.includes('view')" @click="onView">View</DropdownMenuItem>
+         <DropdownMenuItem v-if="props.actions.includes('edit')" @click="onEdit">Edit</DropdownMenuItem>
+         <DropdownMenuItem v-if="props.actions.includes('copy')" @click="onCopy">Make a copy</DropdownMenuItem>
          <DropdownMenuSeparator />
-         <DropdownMenuItem @click="onDelete">
+         <DropdownMenuItem v-if="props.actions.includes('delete')" @click="onDelete">
             Delete
-            <DropdownMenuShortcut>⌘⌫</DropdownMenuShortcut>
+            <DropdownMenuShortcut>⌫</DropdownMenuShortcut>
          </DropdownMenuItem>
       </DropdownMenuContent>
    </DropdownMenu>

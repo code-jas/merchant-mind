@@ -90,6 +90,8 @@ const handlePageSizeChange = (value: string) => {
             </Select>
          </div>
 
+         {{ props.total }}
+
          <!-- Pagination buttons and info -->
          <div class="flex items-center space-x-2">
             <!-- Page information -->

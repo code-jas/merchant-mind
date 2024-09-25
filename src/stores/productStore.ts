@@ -10,7 +10,8 @@ import {
 } from '@/services/productService';
 
 import { getCategories } from '@/services/categoryService';
-import { Category, Product } from '@/types';
+import { getUsers } from '@/services/userService';
+import { Category, DashboardSummary, Product } from '@/types';
 
 interface Filters {
    [key: string]: any;
@@ -38,6 +39,10 @@ export const useProductStore = defineStore('product', {
    },
 
    actions: {
+      async initialize() {
+         await Promise.all([this.fetchProducts(), this.fetchTotalItems()]);
+      },
+
       async fetchProducts() {
          this.isLoading = true;
          this.error = null;
@@ -68,10 +73,6 @@ export const useProductStore = defineStore('product', {
          }
       },
 
-      async initialize() {
-         await Promise.all([this.fetchProducts(), this.fetchTotalItems()]);
-      },
-
       async fetchCategories() {
          this.isLoading = true;
          this.error = null;
@@ -83,30 +84,6 @@ export const useProductStore = defineStore('product', {
          } finally {
             this.isLoading = false;
          }
-      },
-
-      setOffset(newOffset: number) {
-         this.offset = newOffset;
-         this.fetchProducts();
-      },
-
-      setLimit(newLimit: number) {
-         this.limit = newLimit;
-         this.offset = 0;
-         this.fetchProducts();
-      },
-
-      setFilters(newFilters: Filters) {
-         console.log('prooduct store newFilters :>> ', newFilters);
-         this.filters = { ...this.filters, ...newFilters };
-         this.offset = 0; // Reset to start when filters change
-         this.fetchProducts();
-      },
-
-      clearFilters() {
-         this.filters = {};
-         this.offset = 0;
-         this.fetchProducts();
       },
 
       async fetchProduct(id: number) {
@@ -173,6 +150,75 @@ export const useProductStore = defineStore('product', {
          } finally {
             this.isLoading = false;
          }
+      },
+
+      async getSummary(): Promise<DashboardSummary | null> {
+         this.isLoading = true;
+         this.error = null;
+         try {
+            // Fetch products, categories, and users concurrently
+            const [productsResponse, categoriesResponse, usersResponse] = await Promise.all([
+               getProducts({ offset: this.offset, limit: 99999, ...this.filters }),
+               getCategories(),
+               getUsers(),
+            ]);
+
+            // console.log('productsResponse :>> ', productsResponse);
+            // console.log('categoriesResponse :>> ', categoriesResponse);
+            // console.log('usersResponse :>> ', usersResponse);
+
+            // Calculate total products, categories, and users
+            const totalProducts = productsResponse.data.length;
+            const totalCategories = categoriesResponse.length;
+            const totalUsers = usersResponse.length;
+            this.products = productsResponse.data;
+
+            // Calculate total potential revenue by summing up all product prices
+            const potentialRevenue = productsResponse.data.reduce((acc, product) => {
+               // Ensure that product.price exists and is a number
+               return acc + (typeof product.price === 'number' ? product.price : 0);
+            }, 0);
+
+            // Return the summary object
+            const summary: DashboardSummary = {
+               potentialRevenue,
+               products: totalProducts,
+               categories: totalCategories,
+               users: totalUsers,
+            };
+
+            return summary;
+         } catch (err: any) {
+            console.error('Error fetching summary data:', err);
+            this.error = err.message || 'Failed to fetch summary data';
+            return null;
+         } finally {
+            this.isLoading = false;
+         }
+      },
+
+      setOffset(newOffset: number) {
+         this.offset = newOffset;
+         this.fetchProducts();
+      },
+
+      setLimit(newLimit: number) {
+         this.limit = newLimit;
+         this.offset = 0;
+         this.fetchProducts();
+      },
+
+      setFilters(newFilters: Filters) {
+         console.log('prooduct store newFilters :>> ', newFilters);
+         this.filters = { ...this.filters, ...newFilters };
+         this.offset = 0; // Reset to start when filters change
+         this.fetchProducts();
+      },
+
+      clearFilters() {
+         this.filters = {};
+         this.offset = 0;
+         this.fetchProducts();
       },
    },
 });

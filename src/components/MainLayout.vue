@@ -2,7 +2,6 @@
 import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import MainNav from './layout/MainNav.vue';
-import Search from './layout/Search.vue';
 import UserNav from './layout/UserNav.vue';
 
 const route = useRoute();
@@ -35,7 +34,6 @@ watch(
          <div class="flex h-16 items-center px-4">
             <MainNav :currentRoute="currentRouteName" class="mx-6" />
             <div class="ml-auto flex items-center space-x-4">
-               <Search />
                <UserNav />
             </div>
          </div>

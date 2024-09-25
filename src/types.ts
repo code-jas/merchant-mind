@@ -48,3 +48,10 @@ export interface Filters {
    title?: string;
    priceRange?: PriceRangeFilter | undefined;
 }
+
+export interface DashboardSummary {
+   potentialRevenue: number;
+   products: number;
+   categories: number;
+   users: number;
+}

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue';
-import { useForm } from 'vee-validate';
+import { ref, computed, onMounted, watch, toRefs } from 'vue';
+import { useFieldArray, useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
 import { useProductStore } from '@/stores/productStore';
@@ -36,7 +36,7 @@ const props = defineProps<{
    onClose: () => void;
 }>();
 
-const { mode, product, isOpen, onClose } = props;
+const { mode, product, isOpen, onClose } = toRefs(props);
 
 const productStore = useProductStore();
 const { toast } = useToast();
@@ -58,117 +58,62 @@ const formSchema = toTypedSchema(
       title: z.string().trim().min(1, { message: 'Product Title is required' }),
       price: z.number().min(0, { message: 'Price must be a positive number' }),
       description: z.string().trim().min(1, { message: 'Description is required' }),
-      images: z.array(z.string().url({ message: 'Invalid URL' })).min(1, { message: 'At least one image is required' }),
+      images: z.array(z.string()).min(1, { message: 'At least one image is required' }),
    })
 );
 
 // Initialize form
-const { handleSubmit, resetForm, values, setValues, setFieldValue } = useForm({
+const { handleSubmit, resetForm, setValues } = useForm({
    validationSchema: formSchema,
    initialValues: {
-      categoryId: product?.categoryId ? product.categoryId.toString() : '',
-      title: product?.title || '',
-      price: product?.price || 0,
-      description: product?.description || '',
-      images: product?.images.length ? [...product.images] : ['https://picsum.photos/200/300?random=1'],
+      categoryId: product.value?.categoryId ? product.value.categoryId.toString() : '',
+      title: product.value?.title || '',
+      price: product.value?.price || 0,
+      description: product.value?.description || '',
+      images: product.value?.images.length ? [...product.value.images] : ['https://picsum.photos/200/300?random=1'],
    },
 });
 
-// Modal Title and Description
-const modalTitle = computed(() => (mode === 'create' ? 'Create Product' : 'Edit Product'));
+const addImage = () => {
+   push('https://picsum.photos/200/300?random=1');
+};
+
+const removeImage = (index: number) => {
+   remove(index);
+};
+const { fields: imageFields, remove, push } = useFieldArray('images');
+
+const modalTitle = computed(() => (mode.value === 'create' ? 'Create Product' : 'Edit Product'));
 const modalDescription = computed(() =>
-   mode === 'create' ? 'Fill in the details to create a new product.' : 'Update the product details below.'
+   mode.value === 'create' ? 'Fill in the details to create a new product.' : 'Update the product details below.'
 );
 
-// Submit Button Text
-const submitButtonText = computed(() => (mode === 'create' ? 'Create' : 'Update'));
+const submitButtonText = computed(() => (mode.value === 'create' ? 'Create' : 'Update'));
 
-// Submission State
 const isSubmitting = ref(false);
 
-// Images Handling
-const images = computed({
-   get: () => values.images,
-   set: (val: string[]) => setFieldValue('images', val),
-});
-const validImageUrls = ref<string[]>([]);
-
-// Helper to validate URL
-const isValidUrl = (url: string) => {
-   try {
-      new URL(url);
-      return true;
-   } catch {
-      return false;
-   }
-};
-
-// Watch images and validate
-watch(
-   images,
-   (newImages) => {
-      validImageUrls.value = (newImages ?? []).filter((url) => isValidUrl(url));
-   },
-   { immediate: true }
-);
-
-// Validate individual image URL
-const validateImage = (index: number) => {
-   const url = (images.value ?? [])[index];
-   if (isValidUrl(url)) {
-      if (!validImageUrls.value.includes(url)) {
-         validImageUrls.value.push(url);
-      }
-   } else {
-      validImageUrls.value = validImageUrls.value.filter((u) => u !== url);
-   }
-};
-
-// Add a new image URL input
-const addImage = () => {
-   setFieldValue('images', [...(images.value ?? []), '']);
-};
-
-// Remove an image URL input
-const removeImage = (index: number) => {
-   const newImages = [...(images.value ?? [])];
-   const removedUrl = newImages.splice(index, 1)[0];
-   setFieldValue('images', newImages);
-   validImageUrls.value = validImageUrls.value.filter((u) => u !== removedUrl);
-};
-
-// Remove a valid image preview
-const removeValidImage = (url: string) => {
-   const index = images.value?.indexOf(url) ?? -1;
-   if (index !== -1) {
-      const newImages = [...(images.value ?? [])];
-      newImages.splice(index, 1);
-      setFieldValue('images', newImages);
-      validImageUrls.value = validImageUrls.value.filter((u) => u !== url);
-   }
-};
-
-// Form Submission Handler
 const onSubmit = handleSubmit(
    async (formData: { title: string; description: string; categoryId: number; price: number; images: string[] }) => {
       isSubmitting.value = true;
       try {
          console.log('formData :>> ', formData);
-         if (mode === 'create') {
+         if (mode.value === 'create') {
             await productStore.createProduct(formData);
             toast({
                title: 'Success',
                description: 'Product created successfully.',
             });
-         } else if (mode === 'edit' && product) {
-            await productStore.updateProduct(product.id, formData);
+         } else if (mode.value === 'edit' && product) {
+            if (product.value) {
+               await productStore.updateProduct(product.value.id, formData);
+            }
             toast({
                title: 'Success',
                description: 'Product updated successfully.',
             });
          }
          resetForm();
-         onClose();
+         onClose.value();
       } catch (error: any) {
          console.error(error.message);
          toast({
@@ -183,21 +128,22 @@ const onSubmit = handleSubmit(
 
 // Reset form when modal is closed or opened
 watch(
-   () => isOpen,
+   isOpen,
    (newVal) => {
       if (!newVal) {
          resetForm();
-         validImageUrls.value = [];
-      } else if (mode === 'edit' && product) {
+      } else if (mode.value === 'edit' && product) {
          setValues({
-            categoryId: product.categoryId || 0,
-            title: product.title,
-            price: product.price,
-            description: product.description,
-            images: product.images.length ? [...product.images] : [''],
+            categoryId: product.value?.categoryId || 0,
+            title: product.value?.title || '',
+            price: product.value?.price || 0,
+            description: product.value?.description || '',
+            images: product.value?.images.length ? [...product.value.images] : [''],
          });
+         // imageFields.value = product.value?.images.length ? product.value.images.map(image => ({ value: image })) : [{ value: '' }];
       }
-   }
+   },
+   { immediate: true, deep: true }
 );
 </script>
 
@@ -245,7 +191,7 @@ watch(
                   <FormItem>
                      <FormLabel>Title</FormLabel>
                      <FormControl>
-                        <Input v-bind="field" placeholder="Product Title" />
+                        <Input v-bind="field" v-model:model-value="field.value" placeholder="Product Title" />
                      </FormControl>
                      <FormMessage />
                   </FormItem>
@@ -256,7 +202,12 @@ watch(
                   <FormItem>
                      <FormLabel>Price</FormLabel>
                      <FormControl>
-                        <Input type="number" v-bind="field" placeholder="Product Price" />
+                        <Input
+                           type="number"
+                           v-bind="field"
+                           v-model:model-value="field.value"
+                           placeholder="Product Price"
+                        />
                      </FormControl>
                      <FormMessage />
                   </FormItem>
@@ -267,30 +218,30 @@ watch(
                   <FormItem>
                      <FormLabel>Description</FormLabel>
                      <FormControl>
-                        <Textarea v-bind="field" placeholder="Product Description" />
+                        <Textarea v-bind="field" v-model:model-value="field.value" placeholder="Product Description" />
                      </FormControl>
                      <FormMessage />
                   </FormItem>
                </FormField>
 
                <!-- Images -->
-               <FormField name="images">
+               <FormField name="images" v-slot="{ field }">
                   <FormItem>
                      <FormLabel>Images</FormLabel>
                      <FormControl>
                         <div class="space-y-2">
-                           <!-- Image URL Inputs -->
-                           <div v-for="(image, index) in images" :key="index" class="flex items-center space-x-2">
+                           <!-- Image Inputs -->
+                           <div
+                              v-for="(image, index) in imageFields"
+                              :key="image.key"
+                              class="flex items-center space-x-2"
+                           >
+                              {{ field.value[index] }}
                               <Input
-                                 type="url"
-                                 placeholder="Image URL"
-                                 :value="images?.[index]"
-                                 @input="
-                                    (event: any) => {
-                                       setFieldValue(`images.${index}`, event.target.value);
-                                       validateImage(index);
-                                    }
-                                 "
+                                 type="text"
+                                 placeholder="Image"
+                                 :value="field.value[index]"
+                                 v-model:model-value="field.value[index]"
                               />
                               <Button variant="ghost" color="red" size="sm" @click="removeImage(index)">
                                  <Icon icon="radix-icons:trash" />
@@ -305,17 +256,19 @@ watch(
                      <FormMessage />
                   </FormItem>
                </FormField>
-
-               <!-- Image Previews -->
-               <div class="grid grid-cols-3 gap-4" v-if="validImageUrls.length">
-                  <div v-for="(url, index) in validImageUrls" :key="index" class="relative">
-                     <img :src="url" alt="Product Image" class="w-full h-32 object-cover rounded-md" />
+               <div class="grid grid-cols-3 gap-4" v-if="imageFields.length">
+                  <div v-for="(image, index) in imageFields" :key="index" class="relative">
+                     <img
+                        :src="image.value as string"
+                        alt="Product Image"
+                        class="w-full h-32 object-cover rounded-md"
+                     />
                      <Button
                         variant="ghost"
                         color="red"
                         size="sm"
                         class="absolute top-2 right-2"
-                        @click="removeValidImage(url)"
+                        @click="removeImage(index)"
                      >
                         <Icon icon="radix-icons:trash" />
                      </Button>
