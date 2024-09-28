@@ -12,6 +12,7 @@ interface DashboardCard {
    title: string;
    icon: string;
    value: string | number;
+   animatedValue: number;
    description: string;
 }
 
@@ -22,6 +23,26 @@ const isLoading = ref<boolean>(true);
 const errorMessage = ref<string | null>(null);
 
 const products = computed(() => productStore.products);
+
+// Function to animate value increment
+const animateValue = (card: DashboardCard, start: number, end: number, duration: number) => {
+   let startTime: number | null = null;
+   const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = timestamp - startTime;
+      const currentValue = Math.min(start + ((end - start) * progress) / duration, end);
+      card.animatedValue = Math.floor(currentValue); // Update animated value
+
+      if (progress < duration) {
+         // Continue the animation
+         requestAnimationFrame(step);
+      } else {
+         // Ensure the final value is set correctly
+         card.animatedValue = end;
+      }
+   };
+   requestAnimationFrame(step);
+};
 
 // fetching data from an API
 const fetchDashboardData = async () => {
@@ -35,7 +56,8 @@ const fetchDashboardData = async () => {
                id: 1,
                title: 'Total Potential Revenue',
                icon: 'lucide:circle-dollar-sign',
-               value: `$${Number(summary.potentialRevenue).toLocaleString()}`,
+               value: summary.potentialRevenue,
+               animatedValue: 0, // Initial animated value
                description: 'If all products are sold',
             },
             {
@@ -43,6 +65,7 @@ const fetchDashboardData = async () => {
                title: 'Total Products',
                icon: 'lucide:shopping-cart',
                value: summary.products,
+               animatedValue: 0,
                description: 'Total number of products',
             },
             {
@@ -50,6 +73,7 @@ const fetchDashboardData = async () => {
                title: 'Categories',
                icon: 'lucide:folders',
                value: summary.categories,
+               animatedValue: 0,
                description: 'Distinct product categories',
             },
             {
@@ -57,9 +81,15 @@ const fetchDashboardData = async () => {
                title: 'Users',
                icon: 'lucide:users',
                value: summary.users,
+               animatedValue: 0,
                description: 'Total registered users',
             },
          ];
+
+         // Animate all card values
+         dashboardCards.value.forEach((card) => {
+            animateValue(card, 0, card.value as number, 3000); // 2-second duration
+         });
       } else {
          errorMessage.value = 'Failed to retrieve dashboard summary.';
       }
@@ -70,6 +100,7 @@ const fetchDashboardData = async () => {
       isLoading.value = false;
    }
 };
+
 // Fetch data when the component is mounted
 onMounted(() => {
    fetchDashboardData();
@@ -153,7 +184,8 @@ onMounted(() => {
                   />
                </CardHeader>
                <CardContent>
-                  <div class="text-2xl font-bold">{{ card.value }}</div>
+                  <!-- Use animatedValue for the smooth animation -->
+                  <div class="text-2xl font-bold">{{ card.animatedValue }}</div>
                   <p class="text-xs text-muted-foreground">{{ card.description }}</p>
                </CardContent>
             </Card>

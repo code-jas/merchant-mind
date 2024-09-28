@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import MainNav from './layout/MainNav.vue';
 import UserNav from './layout/UserNav.vue';
+import ThemeButton from './layout/ThemeButton.vue';
 
 const route = useRoute();
 const pageTitle = ref('Dashboard');
@@ -34,6 +35,7 @@ watch(
          <div class="flex h-16 items-center px-4">
             <MainNav :currentRoute="currentRouteName" class="mx-6" />
             <div class="ml-auto flex items-center space-x-4">
+               <ThemeButton />
                <UserNav />
             </div>
          </div>
@@ -44,10 +46,6 @@ watch(
             <h2 class="text-3xl font-bold tracking-tight">
                {{ pageTitle }}
             </h2>
-            <!-- <div class="flex items-center space-x-2">
-               <DateRangePicker />
-               <Button>Download</Button>
-            </div> -->
          </div>
          <slot />
       </div>

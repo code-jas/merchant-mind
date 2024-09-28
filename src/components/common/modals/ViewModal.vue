@@ -39,7 +39,7 @@ const closeModal = () => {
 
 <template>
    <Dialog v-model:open="isOpen">
-      <DialogContent class="sm:max-w-4xl flex flex-row h-4/5">
+      <DialogContent class="sm:max-w-4xl flex flex-row max-h-[80%]">
          <div class="flex flex-col gap-4 relative w-full">
             <DialogClose
                class="absolute top-0 right-0 p-2 rounded-full hover:bg-gray-200 hover:text-gray-700 transition-colors duration-200 cursor-pointer"
