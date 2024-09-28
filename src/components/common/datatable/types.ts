@@ -14,6 +14,7 @@ export interface DataTableProps<T> {
    columns: ColumnDef<T, any>[];
    filters?: Record<string, any>;
    totalItems?: number;
+   toolbar?: boolean;
    manualPagination?: boolean;
    offset?: number;
    limit?: number;

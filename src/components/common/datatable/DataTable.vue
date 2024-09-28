@@ -53,10 +53,18 @@ const table = ref(
       data: props.data,
       columns: props.columns,
       state: {
-         sorting: sorting.value,
-         columnFilters: columnFilters.value,
-         columnVisibility: columnVisibility.value,
-         rowSelection: rowSelection.value,
+         get sorting() {
+            return sorting.value;
+         },
+         get columnFilters() {
+            return columnFilters.value;
+         },
+         get columnVisibility() {
+            return columnVisibility.value;
+         },
+         get rowSelection() {
+            return rowSelection.value;
+         },
       },
       enableRowSelection: true,
       manualPagination: props.manualPagination, // Server-side pagination
@@ -95,9 +103,10 @@ const actions = computed(() => props.actions || []);
          <DataTableToolbar
             :table="table"
             :filters="filters || null"
+            :has-filters="props.toolbar"
             @create="emit('create')"
-            @update:filters="emit('filter-change', $event)"
          />
+         <!-- @update:filters="emit('filter-change', $event)" -->
       </slot>
 
       <!-- Table Structure -->

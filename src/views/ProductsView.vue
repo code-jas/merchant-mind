@@ -32,10 +32,10 @@ const handlePageSizeChange = (newLimit: number) => {
    productStore.setLimit(newLimit);
 };
 
-const handleFilterChange = (filters: Record<string, any>) => {
-   console.log('filters :>> ', filters);
-   productStore.setFilters(filters);
-};
+// const handleFilterChange = (filters: Record<string, any>) => {
+//    console.log('filters :>> ', filters);
+//    productStore.setFilters(filters);
+// };
 
 // const clearAllFilters = () => {
 //    productStore.clearFilters();
@@ -55,6 +55,7 @@ const openEditModal = (product: Product) => {
 
 const closeFormModal = () => {
    isFormModalOpen.value = false;
+   console.log('closeFormModal :>> ', isFormModalOpen.value);
 
    setTimeout(() => {
       selectedProduct.value = null;
@@ -99,6 +100,7 @@ const dataTableProps = computed<DataTableProps<Product>>(() => ({
    columns,
    filters: filters.value,
    totalItems: totalItems.value,
+   toolbar: true,
    manualPagination: true,
    offset: offset.value,
    limit: limit.value,
@@ -109,7 +111,7 @@ const dataTableProps = computed<DataTableProps<Product>>(() => ({
 const dataTableEvents: DataTableEvents<Product, keyof Product> = {
    'page-change': handlePageChange,
    'page-size-change': handlePageSizeChange,
-   'filter-change': handleFilterChange,
+   // 'filter-change': handleFilterChange,
    create: openCreateModal,
    view: handleView,
    edit: openEditModal,
@@ -130,13 +132,7 @@ onMounted(() => {
       </div>
 
       <!-- FormModal for Create and Edit -->
-      <FormModal
-         v-if="isFormModalOpen"
-         :mode="modalMode"
-         :product="selectedProduct"
-         :isOpen="isFormModalOpen"
-         @close="closeFormModal"
-      />
+      <FormModal :mode="modalMode" :product="selectedProduct" :isOpen="isFormModalOpen" @close="closeFormModal" />
 
       <ViewModal
          v-if="isViewModalOpen"

@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { reactive, computed, watch } from 'vue';
 import type { Table } from '@tanstack/vue-table';
-import { computed } from 'vue';
+import { useProductStore } from '@/stores/productStore';
 import { Icon } from '@iconify/vue';
-import { debounce } from 'lodash';
 
 import DataTableViewOptions from './DataTableViewOptions.vue';
 import DataTablePriceRangeFilter from './DataTablePriceRangeFilter.vue';
+import DataTableFacetedFilter from './DataTableFacetedFilter.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Filters, PriceRangeFilter } from '@/types';
@@ -14,76 +15,152 @@ import { Filters, PriceRangeFilter } from '@/types';
 interface DataTableToolbarProps<T> {
    table: Table<T>;
    filters: Filters | null;
+   hasFilters: boolean;
 }
 
+let debounceTimer: NodeJS.Timeout | null = null;
+
 const props = defineProps<DataTableToolbarProps<any>>();
-
-// Destructure filters from props
-const { filters } = props;
-
-// Check if any filters are applied
-const isFiltered = computed(() => filters?.title || filters?.priceRange);
-
-// Emit events to update filters
 const emit = defineEmits(['update:filters', 'create']);
 
-const debouncedUpdateTitle = debounce((title: string) => {
-   emit('update:filters', { ...filters, title });
-}, 300); // 300ms debounce delay
+const productStore = useProductStore();
+
+// Create a reactive local copy of the filters
+const localFilters = reactive<Filters>({
+   title: props.filters?.title ?? '',
+   priceRange: props.filters?.priceRange ?? { min: undefined, max: undefined },
+   category: props.filters?.category ?? undefined,
+});
+
+const debounce = (func: (...args: any[]) => void, delay: number) => {
+   return (...args: any[]) => {
+      if (debounceTimer) {
+         clearTimeout(debounceTimer);
+      }
+      debounceTimer = setTimeout(() => {
+         func(...args);
+      }, delay);
+   };
+};
+
+// Watch for changes in props.filters to keep localFilters in sync
+watch(
+   () => props.filters,
+   (newFilters) => {
+      if (newFilters) {
+         localFilters.title = newFilters.title ?? '';
+         localFilters.priceRange = newFilters.priceRange ?? { min: undefined, max: undefined };
+         localFilters.category = newFilters.category ?? undefined;
+      } else {
+         localFilters.title = '';
+         localFilters.priceRange = { min: undefined, max: undefined };
+         localFilters.category = undefined;
+      }
+   },
+   { deep: true, immediate: true }
+);
+
+const debouncedSetFilters = debounce((newFilters: Filters) => {
+   productStore.setFilters(newFilters);
+}, 300);
+
+watch(
+   () => ({ ...localFilters }),
+   (newFilters) => {
+      // Clean up the filters object to include only active filters
+      const filters: Filters = {};
+      if (newFilters.title) filters.title = newFilters.title;
+      if (
+         newFilters.priceRange &&
+         (newFilters.priceRange.min !== undefined || newFilters.priceRange.max !== undefined)
+      ) {
+         filters.priceRange = newFilters.priceRange;
+      }
+      if (newFilters.category !== undefined) filters.category = newFilters.category;
+
+      debouncedSetFilters(filters);
+   },
+   { deep: true }
+);
+
+// Check if any filters are applied
+const isFiltered = computed(() => {
+   return (
+      localFilters.title ||
+      (localFilters.priceRange &&
+         (localFilters.priceRange.min !== undefined || localFilters.priceRange.max !== undefined)) ||
+      localFilters.category !== undefined
+   );
+});
 
 // Update the title filter
-const updatetitle = (title: string) => {
-   debouncedUpdateTitle(title);
-};
+// const updateTitle = debounce((title: string) => {
+//    localFilters.title = title;
+// }, 100);
 
 // Update the price range filter
 const updatePriceRange = (newRange: PriceRangeFilter) => {
-   emit('update:filters', { ...filters, priceRange: newRange });
+   localFilters.priceRange = newRange;
 };
 
-// Clear the price range filter
-const clearPriceRange = () => {
-   emit('update:filters', { ...filters, priceRange: { min: undefined, max: undefined } });
+// Clear all filters
+const resetFilters = () => {
+   localFilters.title = '';
+   localFilters.priceRange = { min: undefined, max: undefined };
+   localFilters.category = undefined;
+};
+
+// Update the category filter
+const updateCategory = (category: number | undefined) => {
+   localFilters.category = category;
 };
 </script>
 
 <template>
    <div class="flex items-center justify-between">
-      <div class="flex flex-1 items-center space-x-2">
-         <!-- title filter -->
+      <div v-if="hasFilters" class="flex flex-1 items-center space-x-2">
+         <!-- Title filter -->
          <Input
-            v-if="filters"
             placeholder="Product Name..."
-            :model-value="filters?.title ?? ''"
+            v-model:modelValue="localFilters.title"
             class="h-8 w-[150px] lg:w-[250px]"
-            @input="updatetitle($event.target.value)"
          />
+         <!-- @input="updateTitle($event.target.value)" -->
 
          <!-- Price range filter -->
          <DataTablePriceRangeFilter
-            v-if="filters"
-            :priceRange="filters?.priceRange ?? { min: undefined, max: undefined }"
+            v-model:priceRange="localFilters.priceRange"
             @update:priceRange="updatePriceRange"
-            @clearFilter="clearPriceRange"
+            @clearFilter="() => (localFilters.priceRange = { min: undefined, max: undefined })"
+         />
+
+         <!-- Category filter -->
+         <DataTableFacetedFilter
+            v-if="table.getColumn('category')"
+            :column="table.getColumn('category')"
+            title="Category"
+            :options="
+               productStore.categories.map((category) => ({
+                  label: category.name,
+                  value: category.id.toString(),
+               }))
+            "
+            v-model:category="localFilters.category"
+            @update:category="updateCategory"
          />
 
          <!-- Reset filters button -->
-         <Button
-            v-if="isFiltered"
-            variant="ghost"
-            class="h-8 px-2 lg:px-3"
-            @click="$emit('update:filters', { title: '', priceRange: { min: undefined, max: undefined } })"
-         >
+         <Button v-if="isFiltered" variant="ghost" class="h-8 px-2 lg:px-3" @click="resetFilters">
             Reset
             <Icon icon="radix-icons:cross-2" class="h-4 w-4" />
          </Button>
       </div>
 
       <!-- Table view options -->
-      <div class="flex gap-4 items-center">
+      <div class="flex gap-4 items-end w-full">
          <DataTableViewOptions :table="table" />
          <div class="flex justify-end">
-            <Button @click="emit('create')" class="h-8"> Create Product </Button>
+            <Button @click="emit('create')" class="h-8">Create Product</Button>
          </div>
       </div>
    </div>

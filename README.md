@@ -3,10 +3,10 @@
 -  [x] Project Initialization and Setup
 -  [x] Authentication Module
 -  [x] Layout and Navigation
--  [ ] Dashboard Module
+-  [x] Dashboard Module
 -  [x] Product Management Module
 -  [x] Category Management Module
--  [ ] Enhancements UI/UX
+-  [x] Enhancements UI/UX
 
 # Vue 3 + TypeScript + Vite
 

@@ -11,11 +11,7 @@ import {
 
 import { getCategories } from '@/services/categoryService';
 import { getUsers } from '@/services/userService';
-import { Category, DashboardSummary, Product } from '@/types';
-
-interface Filters {
-   [key: string]: any;
-}
+import { Category, DashboardSummary, Filters, Product } from '@/types';
 
 export const useProductStore = defineStore('product', {
    state: () => ({
@@ -209,10 +205,17 @@ export const useProductStore = defineStore('product', {
       },
 
       setFilters(newFilters: Filters) {
-         console.log('prooduct store newFilters :>> ', newFilters);
-         this.filters = { ...this.filters, ...newFilters };
-         this.offset = 0; // Reset to start when filters change
-         this.fetchProducts();
+         // Check if newFilters are different from current filters
+         const filtersChanged = JSON.stringify(this.filters) !== JSON.stringify(newFilters);
+
+         if (filtersChanged) {
+            console.log('product store newFilters :>> ', newFilters);
+            this.filters = newFilters;
+            this.offset = 0; // Reset to start when filters change
+            this.fetchProducts();
+         } else {
+            console.log('Filters unchanged. No API call made.');
+         }
       },
 
       clearFilters() {

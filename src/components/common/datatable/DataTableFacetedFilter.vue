@@ -1,8 +1,7 @@
 <script setup lang="ts">
+import { computed, ref, watch } from 'vue';
 import type { Column } from '@tanstack/vue-table';
 import type { Component } from 'vue';
-import { computed } from 'vue';
-import type { Product } from '@/data/schema';
 import { Icon } from '@iconify/vue';
 
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +21,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 
 interface DataTableFacetedFilter {
+   category: string | null;
    column?: Column<Product, any>;
    title?: string;
    options: {
@@ -33,44 +33,63 @@ interface DataTableFacetedFilter {
 
 const props = defineProps<DataTableFacetedFilter>();
 
+const emit = defineEmits(['update:category', 'clearFilter']);
+
+const selectedValue = ref<string | null>(props.column?.getFilterValue() as string | null);
+
 const facets = computed(() => props.column?.getFacetedUniqueValues());
-const selectedValues = computed(() => new Set(props.column?.getFilterValue() as string[]));
+
+const handleSelect = (option: DataTableFacetedFilter['options'][0]) => {
+   if (selectedValue.value === option.value) {
+      selectedValue.value = null;
+      props.column?.setFilterValue(undefined);
+   } else {
+      selectedValue.value = option.value;
+      props.column?.setFilterValue(option.value);
+   }
+   emit('update:category', selectedValue.value);
+};
+
+const clearFilters = () => {
+   console.log('selectedValue :>> ', selectedValue.value);
+   selectedValue.value = null;
+   props.column?.setFilterValue(undefined);
+   emit('update:category', selectedValue.value);
+};
+
+watch(
+   () => props.category,
+   (newVal) => {
+      selectedValue.value = newVal as string | null;
+   },
+   { immediate: true }
+);
 </script>
 
 <template>
    <Popover>
       <PopoverTrigger as-child>
-         <Button variant="outline" size="sm" class="h-8 border-dashed">
+         <Button variant="outline" size="sm" class="h-8 border-dashed flex items-center">
             <Icon icon="radix-icons:plus-circled" class="mr-2 h-4 w-4" />
-            {{ title }}
-            <template v-if="selectedValues.size > 0">
+            <span>
+               {{ title }}
+            </span>
+            <template v-if="selectedValue">
                <Separator orientation="vertical" class="mx-2 h-4" />
-               <Badge variant="secondary" class="rounded-sm px-1 font-normal lg:hidden">
-                  {{ selectedValues.size }}
+               <Badge variant="secondary" class="rounded-sm px-1 font-normal">
+                  {{ options.find((opt) => opt.value === selectedValue)?.label }}
                </Badge>
-               <div class="hidden space-x-1 lg:flex">
-                  <Badge v-if="selectedValues.size > 2" variant="secondary" class="rounded-sm px-1 font-normal">
-                     {{ selectedValues.size }} selected
-                  </Badge>
-
-                  <template v-else>
-                     <Badge
-                        v-for="option in options.filter((option) => selectedValues.has(option.value))"
-                        :key="option.value"
-                        variant="secondary"
-                        class="rounded-sm px-1 font-normal"
-                     >
-                        {{ option.label }}
-                     </Badge>
-                  </template>
-               </div>
             </template>
          </Button>
       </PopoverTrigger>
       <PopoverContent class="w-[200px] p-0" align="start">
          <Command
             :filter-function="
-               (list: any[], term: string) => list.filter((i: any) => i.label.toLowerCase()?.includes(term))
+               (list, term) => {
+                  if (!term) return list; // If no term, return the full list
+                  const lowerTerm = term.toLowerCase();
+                  return list.filter((item) => item.label.toLowerCase().includes(lowerTerm));
+               }
             "
          >
             <CommandInput :placeholder="title" />
@@ -81,25 +100,14 @@ const selectedValues = computed(() => new Set(props.column?.getFilterValue() as 
                      v-for="option in options"
                      :key="option.value"
                      :value="option"
-                     @select="
-                        (e) => {
-                           console.log(e.detail.value);
-                           const isSelected = selectedValues.has(option.value);
-                           if (isSelected) {
-                              selectedValues.delete(option.value);
-                           } else {
-                              selectedValues.add(option.value);
-                           }
-                           const filterValues = Array.from(selectedValues);
-                           column?.setFilterValue(filterValues.length ? filterValues : undefined);
-                        }
-                     "
+                     @select="handleSelect(option)"
+                     class="hover:bg-accent hover:text-accent-foreground"
                   >
                      <div
                         :class="
                            cn(
-                              'mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary',
-                              selectedValues.has(option.value)
+                              'mr-2 flex h-4 w-4 items-center justify-center rounded-full border border-primary',
+                              selectedValue === option.value
                                  ? 'bg-primary text-primary-foreground'
                                  : 'opacity-50 [&_svg]:invisible'
                            )
@@ -107,10 +115,7 @@ const selectedValues = computed(() => new Set(props.column?.getFilterValue() as 
                      >
                         <Icon icon="radix-icons:check" class="h-4 w-4" />
                      </div>
-                     <component :is="option.icon" v-if="option.icon" class="mr-2 h-4 w-4 text-muted-foreground" />
                      <span>{{ option.label }}</span>
-
-                     {{ option }}
                      <span
                         v-if="facets?.get(option.value)"
                         class="ml-auto flex h-4 w-4 items-center justify-center font-mono text-xs"
@@ -120,18 +125,16 @@ const selectedValues = computed(() => new Set(props.column?.getFilterValue() as 
                   </CommandItem>
                </CommandGroup>
 
-               <template v-if="selectedValues.size > 0">
-                  <CommandSeparator />
-                  <CommandGroup>
-                     <CommandItem
-                        :value="{ label: 'Clear filters' }"
-                        class="justify-center text-center"
-                        @select="column?.setFilterValue(undefined)"
-                     >
-                        Clear filters
-                     </CommandItem>
-                  </CommandGroup>
-               </template>
+               <CommandSeparator />
+               <CommandGroup>
+                  <CommandItem
+                     class="justify-center text-center hover:bg-accent hover:text-accent-foreground"
+                     :value="{ label: 'Clear filters' }"
+                     @click="clearFilters"
+                  >
+                     Clear filters
+                  </CommandItem>
+               </CommandGroup>
             </CommandList>
          </Command>
       </PopoverContent>

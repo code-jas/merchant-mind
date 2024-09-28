@@ -63,7 +63,7 @@ export const columns: ColumnDef<Product>[] = [
             ]
          );
       },
-      enableSorting: false, // Image columns typically aren't sortable
+      enableSorting: false,
       enableHiding: true,
    },
    {

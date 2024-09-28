@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, ref, onMounted, watch, onBeforeUnmount } from 'vue';
+import { defineProps, ref, watch, onBeforeUnmount } from 'vue';
 import { Product } from '@/types';
 import placeholderImage from '@/assets/no-image-placeholder.jpg';
 import { ScrollArea } from '../ui/scroll-area';
@@ -38,8 +38,13 @@ const allLoaded = ref<boolean>(false);
 
 // Initialize displayedProducts with the first ITEMS_PER_LOAD products
 const initializeDisplayedProducts = () => {
-   displayedProducts.value = props.products.slice(0, ITEMS_PER_LOAD);
-   allLoaded.value = props.products.length <= ITEMS_PER_LOAD;
+   const sortedProducts = [...props.products].sort(
+      (a, b) => new Date(b.creationAt).getTime() - new Date(a.creationAt).getTime()
+   );
+   console.log('sortedProducts :>> ', sortedProducts);
+
+   displayedProducts.value = sortedProducts.slice(0, ITEMS_PER_LOAD);
+   allLoaded.value = sortedProducts.length <= ITEMS_PER_LOAD;
 };
 
 // Load more products when the user scrolls to the bottom
@@ -87,12 +92,12 @@ const handleScroll = (event: Event) => {
 };
 
 // Initialize displayedProducts on component mount
-onMounted(() => {
-   initializeDisplayedProducts();
-   if (scrollAreaRef.value) {
-      scrollAreaRef.value.addEventListener('scroll', handleScroll);
-   }
-});
+// onMounted(() => {
+//    initializeDisplayedProducts();
+//    if (scrollAreaRef.value) {
+//       scrollAreaRef.value.addEventListener('scroll', handleScroll);
+//    }
+// });
 
 onBeforeUnmount(() => {
    if (scrollAreaRef.value) {

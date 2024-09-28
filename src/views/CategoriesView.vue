@@ -79,6 +79,7 @@ const dataTableProps = computed<DataTableProps<Category>>(() => ({
    columns: columns as ColumnDef<Category, any>[],
    totalItems: totalItems.value,
    manualPagination: true,
+   toolbar: false,
    offset: offset.value,
    limit: limit.value,
    loading: isLoading.value,
@@ -109,7 +110,6 @@ onMounted(() => {
       </div>
 
       <CategoryFormModal
-         v-if="isFormModalOpen"
          :mode="modalMode"
          :category="selectedCategory"
          :isOpen="isFormModalOpen"

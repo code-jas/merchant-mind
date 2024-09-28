@@ -26,12 +26,12 @@ interface CategoriesFormModalProps {
    mode: 'create' | 'edit';
    category?: Category | null;
    isOpen: boolean;
-   onClose: () => void;
 }
 
 const props = defineProps<CategoriesFormModalProps>();
+const emit = defineEmits(['close']);
 
-const { mode, category, isOpen, onClose } = toRefs(props);
+const { mode, category, isOpen } = toRefs(props);
 const { toast } = useToast();
 
 // Form Schema
@@ -80,7 +80,7 @@ const onSubmit = handleSubmit(async (formData: { id?: number; name: string; imag
          description: mode.value === 'create' ? 'Category created successfully.' : 'Category updated successfully.',
       });
       resetForm();
-      onClose.value();
+      emit('close');
    } catch (error: any) {
       console.error(error.message);
       toast({
@@ -96,6 +96,7 @@ const onSubmit = handleSubmit(async (formData: { id?: number; name: string; imag
 watch(
    isOpen,
    (newVal) => {
+      console.log('newVal :>> ', newVal);
       console.log('category watch :>> ', category);
       if (!newVal) {
          resetForm();
@@ -156,7 +157,7 @@ watch(
             </div>
 
             <DialogFooter class="mt-6">
-               <Button type="button" variant="secondary" @click="onClose"> Cancel </Button>
+               <Button type="button" variant="secondary" @click="emit('close')"> Cancel </Button>
                <Button type="submit" :disabled="isSubmitting">
                   <span v-if="isSubmitting">
                      <Icon icon="radix-icons:spinner-circular" class="animate-spin mr-2" />

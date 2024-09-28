@@ -40,13 +40,14 @@ export interface LoginResponse {
 }
 
 export interface PriceRangeFilter {
-   min: number | undefined;
-   max: number | undefined;
+   min: number | null;
+   max: number | null;
 }
 
 export interface Filters {
    title?: string;
    priceRange?: PriceRangeFilter | undefined;
+   category?: number | undefined;
 }
 
 export interface DashboardSummary {

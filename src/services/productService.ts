@@ -17,6 +17,7 @@ export interface ProductRequests {
 const formatParams = (filters: {
    title?: string;
    priceRange?: { min?: number; max?: number };
+   category?: string;
 }): Record<string, any> => {
    const params: Record<string, any> = {};
 
@@ -35,6 +36,11 @@ const formatParams = (filters: {
       params['price_max'] = filters.priceRange.max;
    }
 
+   // Filter by category if provided
+   if (filters.category) {
+      params['categoryId'] = filters.category;
+   }
+
    return params;
 };
 
@@ -47,9 +53,11 @@ const formatParams = (filters: {
  * @returns A promise that resolves to a `ProductRequests` object containing the fetched products and pagination metadata.
  */
 export const getProducts = async (options: Record<string, any> = {}): Promise<ProductRequests> => {
+   console.log('options :>> ', options);
    const formattedFilters = formatParams({
       title: options.title,
       priceRange: options.priceRange,
+      category: options.category,
    });
 
    const params = {
