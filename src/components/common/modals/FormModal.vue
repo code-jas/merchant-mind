@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Import necessary functions and types
-import { ref, computed, onMounted, watch, toRefs } from 'vue';
+import { ref, computed, onMounted, watch, toRefs, toValue } from 'vue';
 import { useFieldArray, useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import * as z from 'zod';
@@ -100,6 +100,9 @@ const onSubmit = handleSubmit(
    async (formData: { title: string; description: string; categoryId: number; price: number; images: string[] }) => {
       isSubmitting.value = true;
       try {
+         const { images } = formData;
+         console.log('onSubmit images :>> ', images);
+         formData.images = cleanImages(images, true);
          console.log('formData :>> ', formData);
          if (mode.value === 'create') {
             await productStore.createProduct(formData);
@@ -137,6 +140,28 @@ const onClose = () => {
    emit('close');
 };
 
+const cleanImages = (imgs: any[], onsubmit = false): string[] => {
+   let images = onsubmit ? imgs : toValue(toValue(imgs));
+   if (!Array.isArray(images)) {
+      console.warn('Expected images to be an array, but received:', images);
+      return [];
+   }
+
+   return images
+      .map((img, index) => {
+         const image = onsubmit ? img : toValue(img).value;
+         if (typeof image === 'string') {
+            // Remove leading/trailing brackets and quotes using regex
+            const cleaned = image.replace(/^[\["']+|[\]"']+$/g, '');
+            console.log(`Cleaned image at index ${index}:`, cleaned);
+            return cleaned;
+         } else {
+            console.warn(`Image at index ${index} is not a string:`, image);
+            return '';
+         }
+      })
+      .filter((image) => image !== '');
+};
 // Reset form when modal is closed or opened
 watch(
    isOpen,
@@ -160,7 +185,7 @@ watch(
 
 <template>
    <Dialog v-model:open="isOpen">
-      <DialogContent class="sm:max-w-[600px] flex flex-row h-4/5">
+      <DialogContent class="sm:max-w-[600px] flex flex-row max-h-[80%]">
          <form @submit="onSubmit" class="flex flex-col gap-4 relative w-full">
             <DialogHeader>
                <DialogTitle>{{ modalTitle }}</DialogTitle>
@@ -240,29 +265,28 @@ watch(
                   </FormField>
 
                   <!-- Images -->
-                  <FormField name="images" v-slot="{ field }">
+                  <FormField name="images">
                      <FormItem>
                         <FormLabel>Images</FormLabel>
                         <FormControl>
                            <div class="space-y-2">
                               <!-- Image Inputs -->
                               <div
-                                 v-for="(image, index) in imageFields"
-                                 :key="image.key"
+                                 v-for="(image, index) in cleanImages(imageFields)"
+                                 :key="index"
                                  class="flex items-center space-x-2"
                               >
-                                 {{ field.value[index] }}
                                  <Input
                                     type="text"
                                     placeholder="Image"
-                                    :value="field.value[index]"
-                                    v-model:model-value="field.value[index]"
+                                    :value="image"
+                                    v-model:model-value="cleanImages(imageFields)[index]"
                                  />
                                  <Button variant="ghost" color="red" size="sm" @click="removeImage(index)">
                                     <Icon icon="radix-icons:trash" />
                                  </Button>
                               </div>
-                              <Button variant="outline" size="sm" @click="addImage">
+                              <Button type="button" variant="outline" size="sm" @click="addImage">
                                  <Icon icon="radix-icons:plus" class="mr-2" />
                                  Add Image
                               </Button>
@@ -272,12 +296,8 @@ watch(
                      </FormItem>
                   </FormField>
                   <div class="grid grid-cols-3 gap-4" v-if="imageFields.length">
-                     <div v-for="(image, index) in imageFields" :key="index" class="relative">
-                        <img
-                           :src="image.value as string"
-                           alt="Product Image"
-                           class="w-full h-32 object-cover rounded-md"
-                        />
+                     <div v-for="(image, index) in cleanImages(imageFields)" :key="index" class="relative">
+                        <img :src="image as string" alt="Product Image" class="w-full h-32 object-cover rounded-md" />
                         <Button
                            variant="ghost"
                            color="red"

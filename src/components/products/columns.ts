@@ -24,7 +24,7 @@ export const columns: ColumnDef<Product>[] = [
       header: 'Image', // Singular since we're displaying only one image
       cell: ({ row }) => {
          const images = row.getValue('images') as string[];
-         const firstImage = images[0];
+         const firstImage = images[0].replace(/^[\["']+|[\]"']+$/g, '');
 
          if (!firstImage) {
             return h('div', { class: 'w-1/5 flex  items-center' }, [

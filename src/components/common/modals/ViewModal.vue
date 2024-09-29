@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, computed } from 'vue';
+import { defineProps, computed, toValue } from 'vue';
 import { Icon } from '@iconify/vue';
 import {
    Dialog,
@@ -35,6 +35,29 @@ const isCategory = computed(() => viewType === 'category' && data !== null && 'i
 const closeModal = () => {
    onClose();
 };
+
+const cleanImages = (imgs: any[], onsubmit = false): string[] => {
+   let images = onsubmit ? imgs : toValue(toValue(imgs));
+   if (!Array.isArray(images)) {
+      console.warn('Expected images to be an array, but received:', images);
+      return [];
+   }
+
+   return images
+      .map((img, index) => {
+         const image = onsubmit ? img : toValue(img).value;
+         if (typeof image === 'string') {
+            // Remove leading/trailing brackets and quotes using regex
+            const cleaned = image.replace(/^[\["']+|[\]"']+$/g, '');
+            console.log(`Cleaned image at index ${index}:`, cleaned);
+            return cleaned;
+         } else {
+            console.warn(`Image at index ${index} is not a string:`, image);
+            return '';
+         }
+      })
+      .filter((image) => image !== '');
+};
 </script>
 
 <template>
@@ -66,7 +89,7 @@ const closeModal = () => {
                   <template v-if="isProduct">
                      <BentoGrid class="py-6 mb-8">
                         <BentoGridItem
-                           v-for="(url, index) in (data as Product).images"
+                           v-for="(url, index) in cleanImages(data.images, true)"
                            :key="index"
                            :image-url="url"
                            class="h-[320px]"
