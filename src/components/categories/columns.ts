@@ -3,10 +3,8 @@ import { h } from 'vue';
 import DataTableColumnHeader from '@/components/common/datatable/DataTableColumnHeader.vue';
 import { cn } from '@/lib/utils';
 import placeholderImage from '@/assets/no-image-placeholder.jpg';
-import { Category } from '@/data/schema';
 
-// Define the columns for the Category DataTable
-export const categoryColumns: ColumnDef<Category>[] = [
+export const categoryColumns: ColumnDef<any>[] = [
    {
       accessorKey: 'id',
       size: 20,

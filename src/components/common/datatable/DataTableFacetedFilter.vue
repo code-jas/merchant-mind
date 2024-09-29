@@ -78,7 +78,7 @@ watch(
             <template v-if="selectedValue">
                <Separator orientation="vertical" class="mx-2 h-4" />
                <Badge variant="secondary" class="rounded-sm px-1 font-normal">
-                  {{ options.find((opt) => opt.value === selectedValue)?.label }}
+                  {{ props.options.find((opt) => opt.value === selectedValue)?.label }}
                </Badge>
             </template>
          </Button>
@@ -86,7 +86,7 @@ watch(
       <PopoverContent class="w-[200px] p-0" align="start">
          <Command
             :filter-function="
-               (list, term) => {
+               (list: any[], term: string) => {
                   const lowerTerm = term.toLowerCase();
                   if (Array.isArray(list) && list.every((item) => typeof item === 'object')) {
                      return list.filter((item) => item?.label?.toString().toLowerCase().includes(lowerTerm));

@@ -1,5 +1,3 @@
-// src/stores/categoryStore.ts
-
 import { defineStore } from 'pinia';
 import { Category } from '@/types';
 import {

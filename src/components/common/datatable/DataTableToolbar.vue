@@ -9,7 +9,7 @@ import DataTablePriceRangeFilter from './DataTablePriceRangeFilter.vue';
 import DataTableFacetedFilter from './DataTableFacetedFilter.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Filters, PriceRangeFilter } from '@/types';
+import { Category, Filters, PriceRangeFilter } from '@/types';
 
 // Define props for the table and filters
 interface DataTableToolbarProps<T> {
@@ -140,7 +140,7 @@ const updateCategory = (category: number | undefined) => {
             :column="table.getColumn('category')"
             title="Category"
             :options="
-               productStore.categories.map((category) => ({
+               productStore.categories.map((category: Category) => ({
                   label: category.name,
                   value: category.id.toString(),
                }))
