@@ -89,7 +89,7 @@ const cleanImages = (imgs: any[], onsubmit = false): string[] => {
                   <template v-if="isProduct">
                      <BentoGrid class="py-6 mb-8">
                         <BentoGridItem
-                           v-for="(url, index) in cleanImages(data.images, true)"
+                           v-for="(url, index) in cleanImages((data as Product).images, true)"
                            :key="index"
                            :image-url="url"
                            class="h-[320px]"
