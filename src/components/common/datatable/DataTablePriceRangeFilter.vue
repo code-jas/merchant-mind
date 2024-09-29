@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface DataTablePriceRangeFilterProps {
-   priceRange: PriceRangeFilter;
+   priceRange: PriceRangeFilter | undefined;
 }
 
 const props = defineProps<DataTablePriceRangeFilterProps>();
@@ -28,15 +28,15 @@ const emit = defineEmits(['update:priceRange', 'clearFilter']);
 const { priceRange } = toRefs(props);
 
 const isPopoverOpen = ref(false);
-const tempMinPrice = ref<number | null>(priceRange.value.min);
-const tempMaxPrice = ref<number | null>(priceRange.value.max);
+const tempMinPrice = ref<number | undefined>(priceRange.value?.min ?? undefined);
+const tempMaxPrice = ref<number | undefined>(priceRange.value?.max ?? undefined);
 
 // Watch for changes in the priceRange prop to update temporary values
 watch(
    () => props.priceRange,
    (newPriceRange) => {
-      tempMinPrice.value = newPriceRange.min;
-      tempMaxPrice.value = newPriceRange.max;
+      tempMinPrice.value = newPriceRange?.min ?? undefined;
+      tempMaxPrice.value = newPriceRange?.max ?? undefined;
    },
    { deep: true }
 );
@@ -68,7 +68,13 @@ const savePriceRange = () => {
       return;
    }
 
-   if (tempMinPrice.value !== null && tempMaxPrice.value !== null && tempMinPrice.value > tempMaxPrice.value) {
+   if (
+      tempMinPrice.value !== null &&
+      tempMinPrice.value !== undefined &&
+      tempMaxPrice.value !== null &&
+      tempMaxPrice.value !== undefined &&
+      tempMinPrice.value > tempMaxPrice.value
+   ) {
       errorMessage.value = 'Min price cannot be greater than Max price.';
       return;
    }
@@ -121,8 +127,7 @@ const clearFilter = () => {
          </div>
          <div class="flex flex-col space-y-4">
             <div>
-               <NumberField v-model="tempMinPrice" id="min" :default-value="null" :min="0">
-                  <Label for="min" class="mb-2">Min Price</Label>
+               <NumberField v-model="tempMinPrice" id="min" :default-value="undefined" :min="0">
                   <NumberFieldContent>
                      <NumberFieldDecrement />
                      <NumberFieldInput />
@@ -132,7 +137,7 @@ const clearFilter = () => {
             </div>
 
             <div>
-               <NumberField v-model="tempMaxPrice" id="max" :default-value="null" :min="tempMinPrice">
+               <NumberField v-model="tempMaxPrice" id="max" :default-value="undefined" :min="tempMinPrice">
                   <Label for="max" class="mb-2">Max Price</Label>
                   <NumberFieldContent>
                      <NumberFieldDecrement />

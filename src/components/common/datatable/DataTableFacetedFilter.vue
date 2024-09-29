@@ -19,9 +19,10 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { Product } from '@/types';
 
 interface DataTableFacetedFilter {
-   category: string | null;
+   category: number | string | null | undefined;
    column?: Column<Product, any>;
    title?: string;
    options: {
@@ -86,9 +87,12 @@ watch(
          <Command
             :filter-function="
                (list, term) => {
-                  if (!term) return list; // If no term, return the full list
                   const lowerTerm = term.toLowerCase();
-                  return list.filter((item) => item.label.toLowerCase().includes(lowerTerm));
+                  if (Array.isArray(list) && list.every((item) => typeof item === 'object')) {
+                     return list.filter((item) => item?.label?.toString().toLowerCase().includes(lowerTerm));
+                  }
+
+                  return [];
                }
             "
          >

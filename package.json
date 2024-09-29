@@ -39,6 +39,7 @@
       "@types/node": "^22.5.5",
       "@typescript-eslint/eslint-plugin": "^8.6.0",
       "@typescript-eslint/parser": "^8.6.0",
+      "@vercel/static-build": "^2.5.27",
       "@vitejs/plugin-vue": "^5.1.2",
       "autoprefixer": "^10.4.20",
       "eslint": "^8.57.1",

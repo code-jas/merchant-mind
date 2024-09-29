@@ -40,8 +40,8 @@ export interface LoginResponse {
 }
 
 export interface PriceRangeFilter {
-   min: number | null;
-   max: number | null;
+   min: number | undefined;
+   max: number | undefined;
 }
 
 export interface Filters {
