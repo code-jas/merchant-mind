@@ -35,6 +35,7 @@ import { Icon } from '@iconify/vue';
    background: linear-gradient(90deg, #884dee 0%, #dd0fe4 100%);
    background-size: 200% 100%;
    -webkit-background-clip: text;
+   background-clip: text;
    -webkit-text-fill-color: transparent;
    animation: text-gradient 3s ease infinite;
 }

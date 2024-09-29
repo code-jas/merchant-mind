@@ -1,14 +1,18 @@
 {
    "compilerOptions": {
-      "target": "ESNext",
-      "useDefineForClassFields": true,
+      "composite": false,
       "module": "ESNext",
       "moduleResolution": "Node",
       "strict": true,
-      "jsx": "preserve",
+      "noUnusedLocals": false,
+      "noUnusedParameters": false,
+      "useDefineForClassFields": true,
+      "inlineSources": false,
       "sourceMap": true,
       "resolveJsonModule": true,
       "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true,
+      "preserveWatchOutput": true,
       "lib": ["ESNext", "DOM"],
       "baseUrl": ".",
       "paths": {
